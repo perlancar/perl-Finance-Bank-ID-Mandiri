@@ -1,0 +1,17 @@
+Revision history for Finance-Bank-ID-Mandiri
+
+0.05    2010-02-17
+        - switch from Moose to Any::Moose (+Mouse as dependency)
+        
+0.04    2010-01-13
+        - remove "use Log::Log4perl" in test script
+        
+0.03    2010-01-07
+        - switch from Log::Log4perl to Log::Any
+        - switch from MakeMaker to Module::Builder
+
+0.02    2009-10-20
+        - Minor fixes.
+
+0.01    2009-10-15
+        First release.

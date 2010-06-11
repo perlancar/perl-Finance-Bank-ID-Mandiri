@@ -79,10 +79,10 @@ GUARANTEE>, explicit or implied.
 
 Most methods die() when encountering errors, so you can use eval() to trap them.
 
-This module uses L<Log::Any>, so you can see more debugging statements on 
+This module uses L<Log::Any>, so you can see more debugging statements on
 your screen, log files, etc.
 
-Full response headers and bodies are dumped to a separate logger. See 
+Full response headers and bodies are dumped to a separate logger. See
 documentation on C<new()> below and the sample script in examples/ subdirectory
 in the distribution.
 
@@ -259,7 +259,7 @@ sub _get_an_account_id {
     for (keys %$accts) {
         if (!$account || $_ eq $account) {
             return $accts->{$_};
-        }    
+        }
     }
     die "cannot find any account ID";
 }
@@ -333,7 +333,7 @@ sub get_statement {
 
     my $mech = $self->mech;
     $self->_req(get => ["$s/retail/TrxHistoryInq.do?action=form"]);
-    
+
     my $today = DateTime->today;
     my $end_date = $args{end_date} || $today;
     my $start_date = $args{start_date} ||
@@ -361,9 +361,9 @@ sub get_statement {
                     "";
                 });
 
-    my ($res, $h, $stmt) = $self->parse_statement($self->mech->content);
-    return if $res != 200;
-    $stmt;
+    my $resp = $self->parse_statement($self->mech->content);
+    return if !$resp || $resp->[0] != 200;
+    $resp->[2];
 }
 
 =head2 parse_statement($html_or_text, %opts)
@@ -393,11 +393,9 @@ into structured data:
     ]
  }
 
-If parsing failed, will return undef.
+Returns:
 
-In list context, this method will return HTTP-style response instead:
-
- ($status, $err_details, $stmt)
+ [$status, $err_details, $stmt]
 
 C<$status> is 200 if successful or some other 3-letter code if parsing failed.
 C<$stmt> is the result (structure as above, or undef if parsing failed).

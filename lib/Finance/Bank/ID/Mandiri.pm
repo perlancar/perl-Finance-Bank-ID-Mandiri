@@ -384,9 +384,6 @@ into structured data:
           seq         => INT, # a number >= 1 which marks the sequence of transactions for the day
           amount      => REAL, # a real number, positive means credit (deposit), negative means debit (withdrawal)
           description => STRING,
-          is_pending  => BOOL,
-          branch      => STRING, # a 4-digit branch/ATM code
-          balance     => REAL,
         },
         # second transaction
         ...

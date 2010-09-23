@@ -177,6 +177,7 @@ sub BUILD {
     my ($self, $args) = @_;
 
     $self->site("https://ib.bankmandiri.co.id") unless $self->site;
+    $self->https_host("ib.bankmandiri.co.id") unless $self->https_host;
 }
 
 =head2 login()

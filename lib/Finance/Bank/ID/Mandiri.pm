@@ -720,35 +720,38 @@ sub _ps_get_transactions_mcm {
     my ($self, $page, $stmt) = @_;
 
     my @rows;
-    while ($page =~ m!^(\d.+)!mg) {
-        push @rows, $1;
+    for (split /\r?\n/, $page) {
+        next unless /\S/;
+        m!^(\d{13});(\w{3});(\d\d)/(\d\d)/(\d\d\d\d)(\d\d\d\d);([^;]+);([^;]*);(\d+(?:\.\d\d?)?)(DR)?;(\d+(?:\.\d\d?)?)(DR)?$!mg
+            or return "Invalid line: $_";
+        push @rows, {
+            account=>$1, currency=>$2, day=>$3, month=>$4, year=>$5,
+            txcode=>$6, desc1=>$7, desc2=>$8, amount=>$9, amount_db=>$10,
+            balance=>$11, balance_db=>$12,
+        };
     }
 
     my @tx;
     my $seq;
     my $last_date;
     for my $row (@rows) {
-        # account;currency;dd/mm/yyyyTTTT;description line 1;description line 2;amount(DR)?;balance
-        # TTTT is 4-digit transaction type code
-        my @f = split /;/, $row;
         my $tx = {};
 
-        $f[0] eq $stmt->{account} or
-            return "Can't handle multiple accounts in transactions";
-        $f[1] eq $stmt->{currency} or
-            return "Can't handle multiple currencies in transactions";
+        $row->{account} eq $stmt->{account} or
+            return "Can't handle multiple accounts in transactions yet";
+        $row->{currency} eq $stmt->{currency} or
+            return "Can't handle multiple currencies in transactions yet";
 
-        $f[2] =~ m!(\d\d)/(\d\d)/(\d\d\d\d)! and
-            $tx->{date} = DateTime->new(day=>$1, month=>$2, year=>$3);
+        $tx->{date} = DateTime->new(
+            day=>$row->{day}, month=>$row->{month}, year=>$row->{year});
 
-        $tx->{description} = $f[3] . ($f[4] ? "\n" . $f[4] : "");
+        $tx->{txcode} = $row->{txcode};
 
-        my $sign;
-        $sign = ($f[-2] =~ s/DR//) ? -1 : 1;
-        $tx->{amount}  = $sign * $f[-2];
+        $tx->{description} = $row->{desc1} .
+            ($row->{desc2} ? "\n" . $row->{desc2} : "");
 
-        $sign = ($f[-1] =~ s/DR//) ? -1 : 1;
-        $tx->{balance}  = $sign * $f[-1];
+        $tx->{amount}  = ($row->{amount_db}  ? -1 : 1) * $row->{amount};
+        $tx->{balance} = ($row->{balance_db} ? -1 : 1) * $row->{balance};
 
         if (!$last_date || DateTime->compare($last_date, $tx->{date})) {
             $seq = 1;

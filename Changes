@@ -1,5 +1,8 @@
 Revision history for Finance-Bank-ID-Mandiri
 
+0.13    2010-09-24
+        - make semicolon format parsing stricter, stricter is better
+
 0.12    2010-09-23
         - enable verify_https in example script
         - add support for parsing new corporate ibanking statement (MCM),

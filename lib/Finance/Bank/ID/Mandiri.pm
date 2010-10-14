@@ -648,7 +648,7 @@ sub _ps_get_transactions_ib {
         # reversal and the pair will be removed anyway by Mandiri in the next
         # day's statement. currently can only handle pair in the same day and in
         # succession.
-        if ($seq > 1 && $tx->{description} =~ /^Reversal / &&
+        if ($seq > 1 && $tx->{description} =~ /^Reversal \(Error Correction\)/ &&
             $tx->{amount} == -$tx[-1]{amount}) {
             push @skipped_tx, pop(@tx);
             push @skipped_tx, $tx;

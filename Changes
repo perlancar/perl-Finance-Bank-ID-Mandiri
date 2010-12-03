@@ -1,5 +1,8 @@
 Revision history for Finance-Bank-ID-Mandiri
 
+0.14    2010-12-03
+        - change example script to use Log::Any::App
+
 0.13    2010-09-24
         - make semicolon format parsing stricter, stricter is better
 

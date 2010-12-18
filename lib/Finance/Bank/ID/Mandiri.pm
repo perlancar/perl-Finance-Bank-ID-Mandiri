@@ -44,7 +44,7 @@ package Finance::Bank::ID::Mandiri;
     if ($ibank->logged_in) { $ibank->logout() }
 
     # utility routines
-    my $stmt = $ibank->parse_statement($html_or_copy_pasted_text);
+    my $res = $ibank->parse_statement($html_or_copy_pasted_text);
 
 Also see the examples/ subdirectory in the distribution for a sample script using
 this module.
@@ -320,7 +320,7 @@ sub check_balance {
     $bal;
 }
 
-=head2 get_statement(%args)
+=head2 get_statement(%args) => $stmt
 
 Get account statement. %args keys:
 
@@ -391,7 +391,7 @@ sub get_statement {
     $resp->[2];
 }
 
-=head2 parse_statement($html_or_text, %opts)
+=head2 parse_statement($html_or_text, %opts) => $res
 
 Given the HTML/copy-pasted text of the account statement results page, parse it
 into structured data:

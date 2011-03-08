@@ -1,5 +1,11 @@
 Revision history for Finance-Bank-ID-Mandiri
 
+0.15    2011-03-08
+        - switch from Mouse to Moo
+        - adjustment to latest MCM semicolon format (optional extra field for
+          third description line. or is it unescaped semicolon? we'll just have
+          to see)
+
 0.14    2010-12-03
         - change example script to use Log::Any::App
 

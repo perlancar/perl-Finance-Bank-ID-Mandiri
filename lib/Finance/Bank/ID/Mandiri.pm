@@ -724,13 +724,22 @@ sub _ps_get_transactions_mcm {
     for (split /\r?\n/, $page) {
         $i++;
         next unless /\S/;
-        m!^(\d{13});(\w{3});(\d\d)/(\d\d)/(\d\d\d\d)(\d\d\d\d);([^;]+);([^;]*);(\d+(?:\.\d\d?)?)(DR)?;(\d+(?:\.\d\d?)?)(DR)?$!mg
-            or return "Invalid syntax in line $i: $_";
-        push @rows, {
-            account=>$1, currency=>$2, day=>$3, month=>$4, year=>$5,
-            txcode=>$6, desc1=>$7, desc2=>$8, amount=>$9, amount_db=>$10,
-            balance=>$11, balance_db=>$12,
-        };
+        if      (m!^(\d{13});(\w{3});(\d\d)/(\d\d)/(\d\d\d\d)(\d\d\d\d);([^;]+);([^;]*);([^;]*);(\d+(?:\.\d\d?)?)(DR)?;(\d+(?:\.\d\d?)?)(DR)?$!mgx) {
+            push @rows, {
+                account   => $1, currency=> $2, day       => $3, month   => $4,
+                year      => $5, txcode  => $6, desc1     => $7, desc2   => $8,
+                desc3     => $9, amount  =>$10, amount_db =>$11, balance =>$12,
+                balance_db=>$13,
+            };
+        } elsif (m!^(\d{13});(\w{3});(\d\d)/(\d\d)/(\d\d\d\d)(\d\d\d\d);([^;]+);([^;]*);        (\d+(?:\.\d\d?)?)(DR)?;(\d+(?:\.\d\d?)?)(DR)?$!mgx) {
+            push @rows, {
+                account  => $1, currency => $2, day    => $3, month     => $4,
+                year     => $5, txcode   => $6, desc1  => $7, desc2     => $8,
+                amount   => $9, amount_db=>$10, balance=>$11, balance_db=>$12,
+            };
+        } else {
+            return "Invalid syntax in line $i: $_";
+        }
     }
 
     my @tx;
@@ -750,7 +759,8 @@ sub _ps_get_transactions_mcm {
         $tx->{txcode} = $row->{txcode};
 
         $tx->{description} = $row->{desc1} .
-            ($row->{desc2} ? "\n" . $row->{desc2} : "");
+            ($row->{desc2} ? "\n" . $row->{desc2} : "") .
+                ($row->{desc3} ? "\n" . $row->{desc3} : "");
 
         $tx->{amount}  = ($row->{amount_db}  ? -1 : 1) * $row->{amount};
         $tx->{balance} = ($row->{balance_db} ? -1 : 1) * $row->{balance};

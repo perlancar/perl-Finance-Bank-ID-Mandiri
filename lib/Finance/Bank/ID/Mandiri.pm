@@ -720,10 +720,12 @@ sub _ps_get_transactions_mcm {
     my ($self, $page, $stmt) = @_;
 
     my @rows;
+    my $i = 0;
     for (split /\r?\n/, $page) {
+        $i++;
         next unless /\S/;
         m!^(\d{13});(\w{3});(\d\d)/(\d\d)/(\d\d\d\d)(\d\d\d\d);([^;]+);([^;]*);(\d+(?:\.\d\d?)?)(DR)?;(\d+(?:\.\d\d?)?)(DR)?$!mg
-            or return "Invalid line: $_";
+            or return "Invalid syntax in line $i: $_";
         push @rows, {
             account=>$1, currency=>$2, day=>$3, month=>$4, year=>$5,
             txcode=>$6, desc1=>$7, desc2=>$8, amount=>$9, amount_db=>$10,

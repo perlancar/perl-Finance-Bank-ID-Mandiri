@@ -113,9 +113,8 @@ Then:
 
  $ download-mandiri
 
-For quieter output:
-
- $ QUIET=1 download-mandiri
+Get your statements in data dir (defaults to ~/mandiri/). See logs in your log
+dir (defaults to ~/mandiri/logs).
 
 
 =head1 DESCRIPTION

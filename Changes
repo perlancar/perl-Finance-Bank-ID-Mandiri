@@ -1,5 +1,10 @@
 Revision history for Finance-Bank-ID-Mandiri
 
+0.16    2011-06-10
+
+        No functional changes. Moved script from examples/ to bin/.
+
+
 0.15    2011-03-08
         - switch from Mouse to Moo
         - adjustment to latest MCM semicolon format (optional extra field for

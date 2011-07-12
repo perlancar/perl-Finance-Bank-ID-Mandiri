@@ -1,115 +1,12 @@
 package Finance::Bank::ID::Mandiri;
-# ABSTRACT: Check your Bank Mandiri accounts from Perl
-
-=head1 SYNOPSIS
-
-    use Finance::Bank::ID::Mandiri;
-
-    # FBI::Mandiri uses Log::Any. to show logs, use something like:
-    use Log::Log4perl qw(:easy);
-    use Log::Any::Adapter;
-    Log::Log4perl->easy_init($DEBUG);
-    Log::Any::Adapter->set('Log4perl');
-
-    my $ibank = Finance::Bank::ID::Mandiri->new(
-        username => '....', # optional if you're only using parse_statement()
-        password => '....', # idem
-        verify_https => 1,          # default is 0
-        #https_ca_dir => '/etc/ssl/certs', # default is already /etc/ssl/certs
-    );
-
-    eval {
-        $ibank->login(); # dies on error
-
-        my $accts = $ibank->list_accounts();
-
-        my $bal = $ibank->check_balance($acct); # $acct is optional
-
-        my $stmt = $ibank->get_statement(
-            account    => ..., # opt, default account will be used if not specified
-            days       => 31,  # opt
-            start_date => DateTime->new(year=>2009, month=>10, day=>6),
-                               # opt, takes precedence over 'days'
-            end_date   => DateTime->today, # opt, takes precedence over 'days'
-        );
-
-        print "Transactions: ";
-        for my $tx (@{ $stmt->{transactions} }) {
-            print "$tx->{date} $tx->{amount} $tx->{description}\n";
-        }
-    };
-
-    # remember to call this, otherwise you will have trouble logging in again
-    # for some time
-    if ($ibank->logged_in) { $ibank->logout() }
-
-    # utility routines
-    my $res = $ibank->parse_statement($html_or_copy_pasted_text);
-
-Also see the examples/ subdirectory in the distribution for a sample script using
-this module.
-
-=head1 DESCRIPTION
-
-This module provide a rudimentary interface to the web-based online banking
-interface of the Indonesian B<Bank Mandiri> at https://ib.bankmandiri.co.id
-(henceforth IB). You will need either L<Crypt::SSLeay> or L<IO::Socket::SSL>
-installed for HTTPS support to work (and strictly L<Crypt::SSLeay> to enable
-certificate verification). L<WWW::Mechanize> is required but you can supply your
-own mech-like object.
-
-Aside from the above site for invididual accounts, there are also 2 other sites
-for corporate accounts: https://cms.bankmandiri.co.id/ecbanking/ (henceforth CMS)
-and https://mcm.bankmandiri.co.id/ (henceforth MCM). CMS is the older version and
-as of the end of Sept, 2010 has been discontinued.
-
-This module currently can only login to IB and not CMS/MCM, but this module can
-parse statement page from all 3 sites. For CMS version, only text version [copy
-paste result] is currently supported and not HTML. For MCM, only semicolon format
-is currently supported.
-
-Warning: This module is neither offical nor is it tested to be 100% save! Because
-of the nature of web-robots, everything may break from one day to the other when
-the underlying web interface changes.
-
-=head1 WARNING
-
-This warning is from Simon Cozens' C<Finance::Bank::LloydsTSB>, and seems just
-as apt here.
-
-This is code for B<online banking>, and that means B<your money>, and that means
-B<BE CAREFUL>. You are encouraged, nay, expected, to audit the source of this
-module yourself to reassure yourself that I am not doing anything untoward with
-your banking data. This software is useful to me, but is provided under B<NO
-GUARANTEE>, explicit or implied.
-
-=head1 ERROR HANDLING AND DEBUGGING
-
-Most methods die() when encountering errors, so you can use eval() to trap them.
-
-This module uses L<Log::Any>, so you can see more debugging statements on
-your screen, log files, etc.
-
-Full response headers and bodies are dumped to a separate logger. See
-documentation on C<new()> below and the sample script in examples/ subdirectory
-in the distribution.
-
-=cut
-
 use Moo;
 use DateTime;
 
 extends 'Finance::Bank::ID::Base';
 
-=head1 ATTRIBUTES
-
-=cut
+# VERSION
 
 has _variant => (is => 'rw'); # retail or pt
-
-=head1 METHODS
-
-=cut
 
 sub _make_readonly_inputs_rw {
     my ($self, @forms) = @_;
@@ -120,84 +17,12 @@ sub _make_readonly_inputs_rw {
     }
 }
 
-=head2 new(%args)
-
-Create a new instance. %args keys:
-
-=over
-
-=item * username
-
-Optional if you are just using utility methods like C<parse_statement()> and not
-C<login()> etc.
-
-=item * password
-
-Optional if you are just using utility methods like C<parse_statement()> and not
-C<login()> etc.
-
-=item * mech
-
-Optional. A L<WWW::Mechanize>-like object. By default this module instantiate a
-new L<Finance::BankUtils::ID::Mechanize> (a WWW::Mechanize subclass) object to
-retrieve web pages, but if you want to use a custom/different one, you are
-allowed to do so here. Use cases include: you want to retry and increase timeout
-due to slow/unreliable network connection (using
-L<WWW::Mechanize::Plugin::Retry>), you want to slow things down using
-L<WWW::Mechanize::Sleepy>, you want to use IE engine using
-L<Win32::IE::Mechanize>, etc.
-
-=item * verify_https
-
-Optional. If you are using the default mech object (see previous option), you can
-set this option to 1 to enable SSL certificate verification (recommended for
-security). Default is 0.
-
-SSL verification will require a CA bundle directory, default is /etc/ssl/certs.
-Adjust B<https_ca_dir> option if your CA bundle is not located in that directory.
-
-=item * https_ca_dir
-
-Optional. Default is /etc/ssl/certs. Used to set HTTPS_CA_DIR environment
-variable for enabling certificate checking in Crypt::SSLeay. Only used if
-B<verify_https> is on.
-
-=item * logger
-
-Optional. You can supply a L<Log::Any>-like object here. If not specified,
-this module will use a default logger.
-
-=item * logger_dump
-
-Optional. You can supply a L<Log::Any>-like object here. This is just
-like C<logger> but this module will log contents of response bodies
-here for debugging purposes. You can use with something like
-L<Log::Dispatch::Dir> to save web pages more conveniently as separate
-files.
-
-=back
-
-=cut
-
 sub BUILD {
     my ($self, $args) = @_;
 
     $self->site("https://ib.bankmandiri.co.id") unless $self->site;
     $self->https_host("ib.bankmandiri.co.id") unless $self->https_host;
 }
-
-=head2 login()
-
-Login to the net banking site. You actually do not have to do this explicitly as
-login() is called by other methods like C<check_balance()> or
-C<get_statement()>.
-
-If login is successful, C<logged_in> will be set to true and subsequent calls to
-C<login()> will become a no-op until C<logout()> is called.
-
-Dies on failure.
-
-=cut
 
 sub login {
     my ($self) = @_;
@@ -236,19 +61,6 @@ sub login {
                 });
     $self->logged_in(1);
 }
-
-=head2 logout()
-
-Logout from the net banking site. You need to call this at the end of your
-program, otherwise the site will prevent you from re-logging in for some time
-(e.g. 10 minutes).
-
-If logout is successful, C<logged_in> will be set to false and subsequent calls
-to C<logout()> will become a no-op until C<login()> is called.
-
-Dies on failure.
-
-=cut
 
 sub logout {
     my ($self) = @_;
@@ -289,18 +101,10 @@ sub _get_an_account_id {
     die "cannot find any account ID";
 }
 
-=head2 list_accounts()
-
-=cut
-
 sub list_accounts {
     my ($self) = @_;
     keys %{ $self->_parse_accounts(1) };
 }
-
-=head2 check_balance([$acct])
-
-=cut
 
 sub check_balance {
     my ($self, $account) = @_;
@@ -319,35 +123,6 @@ sub check_balance {
                 });
     $bal;
 }
-
-=head2 get_statement(%args) => $stmt
-
-Get account statement. %args keys:
-
-=over
-
-=item * account
-
-Optional. Select the account to get statement of. If not specified, will use the
-already selected account.
-
-=item * days
-
-Optional. Number of days between 1 and 31. If days is 1, then start date and end
-date will be the same. Default is 31.
-
-=item * start_date
-
-Optional. Default is end_date - days.
-
-=item * end_date
-
-Optional. Default is today (or some 1+ days from today if today is a
-Saturday/Sunday/holiday, depending on the default value set by the site's form).
-
-=back
-
-=cut
 
 sub get_statement {
     my ($self, %args) = @_;
@@ -390,39 +165,6 @@ sub get_statement {
     return if !$resp || $resp->[0] != 200;
     $resp->[2];
 }
-
-=head2 parse_statement($html_or_text, %opts) => $res
-
-Given the HTML/copy-pasted text of the account statement results page, parse it
-into structured data:
-
- $stmt = {
-    start_date     => $start_dt, # a DateTime object
-    end_date       => $end_dt,   # a DateTime object
-    account_holder => STRING,
-    account        => STRING,    # account number
-    currency       => STRING,    # 3-digit currency code
-    transactions   => [
-        # first transaction
-        {
-          date        => $dt, # a DateTime object, book date ("tanggal pembukuan")
-          seq         => INT, # a number >= 1 which marks the sequence of transactions for the day
-          amount      => REAL, # a real number, positive means credit (deposit), negative means debit (withdrawal)
-          description => STRING,
-        },
-        # second transaction
-        ...
-    ]
- }
-
-Returns:
-
- [$status, $err_details, $stmt]
-
-C<$status> is 200 if successful or some other 3-letter code if parsing failed.
-C<$stmt> is the result (structure as above, or undef if parsing failed).
-
-=cut
 
 sub _ps_detect {
     my ($self, $page) = @_;
@@ -780,3 +522,251 @@ sub _ps_get_transactions_mcm {
 }
 
 1;
+# ABSTRACT: Check your Bank Mandiri accounts from Perl
+
+=head1 SYNOPSIS
+
+    use Finance::Bank::ID::Mandiri;
+
+    # FBI::Mandiri uses Log::Any. to show logs, use something like:
+    use Log::Log4perl qw(:easy);
+    use Log::Any::Adapter;
+    Log::Log4perl->easy_init($DEBUG);
+    Log::Any::Adapter->set('Log4perl');
+
+    my $ibank = Finance::Bank::ID::Mandiri->new(
+        username => '....', # optional if you're only using parse_statement()
+        password => '....', # idem
+        verify_https => 1,          # default is 0
+        #https_ca_dir => '/etc/ssl/certs', # default is already /etc/ssl/certs
+    );
+
+    eval {
+        $ibank->login(); # dies on error
+
+        my $accts = $ibank->list_accounts();
+
+        my $bal = $ibank->check_balance($acct); # $acct is optional
+
+        my $stmt = $ibank->get_statement(
+            account    => ..., # opt, default account used if not undef
+            days       => 31,  # opt
+            start_date => DateTime->new(year=>2009, month=>10, day=>6),
+                               # opt, takes precedence over 'days'
+            end_date   => DateTime->today, # opt, takes precedence over 'days'
+        );
+
+        print "Transactions: ";
+        for my $tx (@{ $stmt->{transactions} }) {
+            print "$tx->{date} $tx->{amount} $tx->{description}\n";
+        }
+    };
+
+    # remember to call this, otherwise you will have trouble logging in again
+    # for some time
+    if ($ibank->logged_in) { $ibank->logout() }
+
+    # utility routines
+    my $res = $ibank->parse_statement($html_or_copy_pasted_text);
+
+Also see the examples/ subdirectory in the distribution for a sample script
+using this module.
+
+
+=head1 DESCRIPTION
+
+This module provide a rudimentary interface to the web-based online banking
+interface of the Indonesian B<Bank Mandiri> at https://ib.bankmandiri.co.id
+(henceforth IB). You will need either L<Crypt::SSLeay> or L<IO::Socket::SSL>
+installed for HTTPS support to work (and strictly L<Crypt::SSLeay> to enable
+certificate verification). L<WWW::Mechanize> is required but you can supply your
+own mech-like object.
+
+Aside from the above site for invididual accounts, there are also 2 other sites
+for corporate accounts: https://cms.bankmandiri.co.id/ecbanking/ (henceforth
+CMS) and https://mcm.bankmandiri.co.id/ (henceforth MCM). CMS is the older
+version and as of the end of Sept, 2010 has been discontinued.
+
+This module currently can only login to IB and not CMS/MCM, but this module can
+parse statement page from all 3 sites. For CMS version, only text version [copy
+paste result] is currently supported and not HTML. For MCM, only semicolon
+format is currently supported.
+
+Warning: This module is neither offical nor is it tested to be 100% save!
+Because of the nature of web-robots, everything may break from one day to the
+other when the underlying web interface changes.
+
+
+=head1 WARNING
+
+This warning is from Simon Cozens' C<Finance::Bank::LloydsTSB>, and seems just
+as apt here.
+
+This is code for B<online banking>, and that means B<your money>, and that means
+B<BE CAREFUL>. You are encouraged, nay, expected, to audit the source of this
+module yourself to reassure yourself that I am not doing anything untoward with
+your banking data. This software is useful to me, but is provided under B<NO
+GUARANTEE>, explicit or implied.
+
+
+=head1 ERROR HANDLING AND DEBUGGING
+
+Most methods die() when encountering errors, so you can use eval() to trap them.
+
+This module uses L<Log::Any>, so you can see more debugging statements on
+your screen, log files, etc.
+
+Full response headers and bodies are dumped to a separate logger. See
+documentation on C<new()> below and the sample script in examples/ subdirectory
+in the distribution.
+
+
+=head1 ATTRIBUTES
+
+
+=head1 METHODS
+
+=head2 new(%args)
+
+Create a new instance. %args keys:
+
+=over
+
+=item * username
+
+Optional if you are just using utility methods like C<parse_statement()> and not
+C<login()> etc.
+
+=item * password
+
+Optional if you are just using utility methods like C<parse_statement()> and not
+C<login()> etc.
+
+=item * mech
+
+Optional. A L<WWW::Mechanize>-like object. By default this module instantiate a
+new L<Finance::BankUtils::ID::Mechanize> (a WWW::Mechanize subclass) object to
+retrieve web pages, but if you want to use a custom/different one, you are
+allowed to do so here. Use cases include: you want to retry and increase timeout
+due to slow/unreliable network connection (using
+L<WWW::Mechanize::Plugin::Retry>), you want to slow things down using
+L<WWW::Mechanize::Sleepy>, you want to use IE engine using
+L<Win32::IE::Mechanize>, etc.
+
+=item * verify_https
+
+Optional. If you are using the default mech object (see previous option), you
+can set this option to 1 to enable SSL certificate verification (recommended for
+security). Default is 0.
+
+SSL verification will require a CA bundle directory, default is /etc/ssl/certs.
+Adjust B<https_ca_dir> option if your CA bundle is not located in that
+directory.
+
+=item * https_ca_dir
+
+Optional. Default is /etc/ssl/certs. Used to set HTTPS_CA_DIR environment
+variable for enabling certificate checking in Crypt::SSLeay. Only used if
+B<verify_https> is on.
+
+=item * logger
+
+Optional. You can supply a L<Log::Any>-like object here. If not specified,
+this module will use a default logger.
+
+=item * logger_dump
+
+Optional. You can supply a L<Log::Any>-like object here. This is just
+like C<logger> but this module will log contents of response bodies
+here for debugging purposes. You can use with something like
+L<Log::Dispatch::Dir> to save web pages more conveniently as separate
+files.
+
+=back
+
+=head2 login()
+
+Login to the net banking site. You actually do not have to do this explicitly as
+login() is called by other methods like C<check_balance()> or
+C<get_statement()>.
+
+If login is successful, C<logged_in> will be set to true and subsequent calls to
+C<login()> will become a no-op until C<logout()> is called.
+
+Dies on failure.
+
+=head2 logout()
+
+Logout from the net banking site. You need to call this at the end of your
+program, otherwise the site will prevent you from re-logging in for some time
+(e.g. 10 minutes).
+
+If logout is successful, C<logged_in> will be set to false and subsequent calls
+to C<logout()> will become a no-op until C<login()> is called.
+
+Dies on failure.
+
+=head2 list_accounts()
+
+=head2 check_balance([$acct])
+
+=head2 get_statement(%args) => $stmt
+
+Get account statement. %args keys:
+
+=over
+
+=item * account
+
+Optional. Select the account to get statement of. If not specified, will use the
+already selected account.
+
+=item * days
+
+Optional. Number of days between 1 and 31. If days is 1, then start date and end
+date will be the same. Default is 31.
+
+=item * start_date
+
+Optional. Default is end_date - days.
+
+=item * end_date
+
+Optional. Default is today (or some 1+ days from today if today is a
+Saturday/Sunday/holiday, depending on the default value set by the site's form).
+
+=back
+
+=head2 parse_statement($html_or_text, %opts) => $res
+
+Given the HTML/copy-pasted text of the account statement results page, parse it
+into structured data:
+
+ $stmt = {
+    start_date     => $start_dt, # a DateTime object
+    end_date       => $end_dt,   # a DateTime object
+    account_holder => STRING,
+    account        => STRING,    # account number
+    currency       => STRING,    # 3-digit currency code
+    transactions   => [
+        # first transaction
+        {
+          date        => $dt, # a DateTime object, book date ("tanggal pembukuan")
+          seq         => INT, # a number >= 1 which marks the sequence of transactions for the day
+          amount      => REAL, # a real number, positive means credit (deposit), negative means debit (withdrawal)
+          description => STRING,
+        },
+        # second transaction
+        ...
+    ]
+ }
+
+Returns:
+
+ [$status, $err_details, $stmt]
+
+C<$status> is 200 if successful or some other 3-letter code if parsing failed.
+C<$stmt> is the result (structure as above, or undef if parsing failed).
+
+=cut
+

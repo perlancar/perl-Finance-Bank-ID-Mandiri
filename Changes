@@ -1,5 +1,12 @@
 Revision history for Finance-Bank-ID-Mandiri
 
+0.20    2011-07-13
+
+        [FIXES]
+
+        - (build) Fix dzil's dist.ini.
+
+
 0.19    2011-07-13
 
         [UPDATES]

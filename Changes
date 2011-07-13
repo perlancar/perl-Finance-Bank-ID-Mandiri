@@ -1,5 +1,12 @@
 Revision history for Finance-Bank-ID-Mandiri
 
+0.19    2011-07-13
+
+        [UPDATES]
+
+        - Parse new CSV format (July 2011).
+
+
 0.18    2011-06-15
 
         No functional changes. Fixed missing dependencies [CT].

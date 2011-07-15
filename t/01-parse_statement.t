@@ -92,7 +92,7 @@ for my $f (
     is(DateTime->compare($stmt->{transactions}[0]{date},
                          DateTime->new(year=>2010, month=>8, day=>31)),
        0, "$f->[1] (tx0 date)");
-    is($stmt->{transactions}[0]{amount}, -25000, "$f->[1] (tx0 amount)");
+    is($stmt->{transactions}[0]{amount}, -25000, "$f->[1] (tx0 amount, debit)");
     is($stmt->{transactions}[0]{seq}, 1, "$f->[1] (tx0 seq)");
 
     is($stmt->{transactions}[1]{amount}, 1.55, "$f->[1] (credit)");
@@ -123,7 +123,8 @@ for my $f (
     is(DateTime->compare($stmt->{transactions}[0]{date},
                          DateTime->new(year=>2011, month=>6, day=>29)),
        0, "$f->[1] (tx0 date)");
-    is($stmt->{transactions}[0]{amount}, 769780, "$f->[1] (tx0 amount)");
+    is($stmt->{transactions}[0]{amount}, 769780,
+       "$f->[1] (tx0 amount, credit)");
     is($stmt->{transactions}[0]{seq}, 1, "$f->[1] (tx0 seq)");
 
     is($stmt->{transactions}[3]{amount}, -200, "$f->[1] (debit)");

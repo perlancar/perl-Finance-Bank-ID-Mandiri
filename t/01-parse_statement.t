@@ -71,7 +71,7 @@ for my $f (
 }
 
 for my $f (
-    ["stmt-mcm-v201103.csv", "mcm, semicolon"],) {
+    ["stmt-mcm-v201103.csv", "mcm v201103, semicolon"],) {
     my $resp = $ibank->parse_statement(scalar read_file("$Bin/data/$f->[0]"));
     die "status=$resp->[0], error=$resp->[1]\n" if $resp->[0] != 200;
     my $stmt = $resp->[2];

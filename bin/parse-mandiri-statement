@@ -15,11 +15,11 @@ my $stmt = join "", <>;
 print Dump $ibank->parse_statement($stmt);
 
 1;
-# ABSTRACT:
+# ABSTRACT: Parse Bank Mandiri internet banking statement
 
 =head1 SYNOPSIS
 
- % parse-ibanking-statement < statement-page
+ % parse-mandiri-statement < statement-page
 
 
 =head1 DESCRIPTION

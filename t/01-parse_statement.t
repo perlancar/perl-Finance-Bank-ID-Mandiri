@@ -40,7 +40,7 @@ for my $f (
 }
 
 for my $f (
-    ["stmt2.txt", "cms, txt"],) {
+    ["stmt-cms.txt", "cms, txt"],) {
     my $resp = $ibank->parse_statement(scalar read_file("$Bin/data/$f->[0]"));
     die "status=$resp->[0], error=$resp->[1]\n" if $resp->[0] != 200;
     my $stmt = $resp->[2];
@@ -71,7 +71,7 @@ for my $f (
 }
 
 for my $f (
-    ["stmt3.txt", "mcm, semicolon"],) {
+    ["stmt-mcm-v201107.csv", "mcm v201107, semicolon"],) {
     my $resp = $ibank->parse_statement(scalar read_file("$Bin/data/$f->[0]"));
     die "status=$resp->[0], error=$resp->[1]\n" if $resp->[0] != 200;
     my $stmt = $resp->[2];

@@ -1,0 +1,32 @@
+#!/usr/bin/perl
+
+# workaround for dzil
+package parse_mandiri_statement;
+
+use 5.010;
+use strict;
+use warnings;
+
+use Finance::Bank::ID::Mandiri;
+use YAML;
+
+my $ibank = Finance::Bank::ID::Mandiri->new;
+my $stmt = join "", <>;
+print Dump $ibank->parse_statement($stmt);
+
+1;
+# ABSTRACT:
+
+=head1 SYNOPSIS
+
+ % parse-ibanking-statement < statement-page
+
+
+=head1 DESCRIPTION
+
+
+=head1 SEE ALSO
+
+L<Finance::Bank::ID::Mandiri>
+
+=cut

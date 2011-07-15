@@ -1,5 +1,12 @@
 Revision history for Finance-Bank-ID-Mandiri
 
+0.21    2011-07-15
+
+        [ENHANCEMENTS]
+
+        - Support old MCM format (v201103) as well as new one (v201107).
+
+
 0.20    2011-07-13
 
         [FIXES]
@@ -11,7 +18,7 @@ Revision history for Finance-Bank-ID-Mandiri
 
         [UPDATES]
 
-        - Parse new CSV format (July 2011).
+        - Parse new MCM format (July 2011).
 
 
 0.18    2011-06-15

@@ -8,7 +8,39 @@ extends 'Finance::Bank::ID::Base';
 
 # VERSION
 
-has _variant => (is => 'rw'); # retail or pt
+has _variant => (is => 'rw');
+has _re_tx   => (is => 'rw');
+
+my $re_acc         = qr/(?:\d{13})/;
+my $re_currency    = qr/(?:\w{3})/;
+my $re_money       = qr/(?:\d+(?:\.\d\d?)?)/;
+my $re_moneymin    = qr/(?:-?\d+(?:\.\d\d?)?)/; # allow negative
+my $re_date1       = qr!(?:\d{2}/\d{2}/\d{4})!; # 25/12/2010
+my $re_txcode      = qr!(?:\d{4})!;
+
+# original version when support first added
+my $re_mcm_v201009 = qr!^(?<acc>$re_acc);(?<currency>$re_currency);
+                        (?<date_d>\d\d)/(?<date_m>\d\d)/(?<date_y>\d\d\d\d)
+                        (?<txcode>$re_txcode);
+                        (?<desc1>[^;]+);(?<desc2>[^;]*);
+                        (?<amount>$re_money)(?<amount_dbmarker>DR)?;
+                        (?<bal>$re_money)(?<bal_dbmarker>DR)?$!mx;
+# what's new: third line argument
+my $re_mcm_v201103 = qr!^(?<acc>$re_acc);(?<currency>$re_currency);
+                        (?<date_d>\d\d)/(?<date_m>\d\d)/(?<date_y>\d\d\d\d)
+                        (?<txcode>$re_txcode);
+                        (?<desc1>[^;]+);(?<desc2>[^;]*);(?:(?<desc3>[^;]*);)?
+                        (?<amount>$re_money)(?<amount_dbmarker>DR)?;
+                        (?<bal>$re_money)(?<bal_dbmarker>DR)?$!mx;
+# what's new: txcode moved to 3rd column, credit & debit amount split into 2
+# fields
+my $re_mcm_v201107 = qr!^(?<acc>$re_acc);(?<currency>$re_currency);
+                        (?<txcode>$re_txcode);
+                        (?<date_d>\d\d)/(?<date_m>\d\d)/(?<date_y>\d\d\d\d);
+                        (?<desc1>[^;]+);(?<desc2>[^;]*);(?:(?<desc3>[^;]*);)?
+                        (?<amount_db>$re_money);
+                        (?<amount_cr>$re_money);
+                        (?<bal>$re_moneymin)!mx; # maybe? no more DR marker
 
 sub _make_readonly_inputs_rw {
     my ($self, @forms) = @_;
@@ -176,8 +208,17 @@ sub _ps_detect {
     } elsif ($page =~ /^CMS-Mandiri/ms) {
         $self->_variant('cms');
         return '';
-    } elsif ($page =~ /^\d{13};/s) {
-        $self->_variant('mcm');
+    #} elsif ($page =~ /$re_mcm_v201009/) {
+    #    $self->_variant('mcm-v201009');
+    #    $self->_re_tx($re_mcm_v201009);
+    #    return '';
+    } elsif ($page =~ /$re_mcm_v201103/) {
+        $self->_variant('mcm-v201103');
+        $self->_re_tx($re_mcm_v201103);
+        return '';
+    } elsif ($page =~ /$re_mcm_v201107/) {
+        $self->_variant('mcm-v201107');
+        $self->_re_tx($re_mcm_v201107);
         return '';
     } else {
         return "No Mandiri statement page signature found";
@@ -190,7 +231,7 @@ sub _ps_get_metadata {
         $self->_ps_get_metadata_ib(@args);
     } elsif ($self->_variant eq 'cms') {
         $self->_ps_get_metadata_cms(@args);
-    } elsif ($self->_variant eq 'mcm') {
+    } elsif ($self->_variant =~ /^mcm/) {
         $self->_ps_get_metadata_mcm(@args);
     } else {
         return "internal bug: _variant not yet set";
@@ -306,21 +347,21 @@ sub _ps_get_metadata_cms {
 sub _ps_get_metadata_mcm {
     my ($self, $page, $stmt) = @_;
 
-    unless ($page =~ m!^(\d{13});(\w{3});(?:\d{4});(\d\d)/(\d\d)/(\d\d\d\d)!) {
-        return "can't get account number & currency & date";
-    }
-    $stmt->{account} = $1;
-    $stmt->{currency} = $2;
-    $stmt->{start_date} = DateTime->new(day=>$3, month=>$4, year=>$5);
+    my $re_tx = $self->_re_tx;
 
-    # we'll just assume the first and last transaction date to be start and end
-    # date of statement, because the semicolon format doesn't include any other
-    # metadata.
-    unless ($page =~
-                m!.+^(\d{13});(\w{3});(?:\d{4});(\d\d)/(\d\d)/(\d\d\d\d)!ms) {
-        return "can't get end date";
-    }
-    $stmt->{end_date} = DateTime->new(day=>$3, month=>$4, year=>$5);
+    $page =~ m!$re_tx!
+        or return "can't get account number & currency & date";
+    $stmt->{account} = $+{acc};
+    $stmt->{currency} = $+{currency};
+    $stmt->{start_date} = DateTime->new(
+        day=>$+{date_d}, month=>$+{date_m}, year=>$+{date_y});
+
+    # we'll just assume the first and last transaction date to be start and
+    # end date of statement, because the semicolon format doesn't include
+    # any other metadata.
+    $page =~ m!.*$re_tx!s or return "can't get end date";
+    $stmt->{end_date} = DateTime->new(
+        day=>$+{date_d}, month=>$+{date_m}, year=>$+{date_y});
 
     # Mandiri sucks, doesn't provide total credit/debit in statement
     my $n = 0;
@@ -335,7 +376,7 @@ sub _ps_get_transactions {
         $self->_ps_get_transactions_ib(@args);
     } elsif ($self->_variant eq 'cms') {
         $self->_ps_get_transactions_cms(@args);
-    } elsif ($self->_variant eq 'mcm') {
+    } elsif ($self->_variant =~ /^mcm/) {
         $self->_ps_get_transactions_mcm(@args);
     } else {
         return "internal bug: _variant not yet set";
@@ -465,41 +506,35 @@ sub _ps_get_transactions_cms {
 sub _ps_get_transactions_mcm {
     my ($self, $page, $stmt) = @_;
 
-    state $re_acc = qr/(?:\d{13})/;
-    state $re_currency = qr/(?:\w{3})/;
-    state $re_money = qr/(?:\d+(?:\.\d\d?)?)/;
+    my $re_tx = $self->_re_tx;
 
     my @rows;
     my $i = 0;
     for (split /\r?\n/, $page) {
         $i++;
         next unless /\S/;
-        # new format, jul 2011
-        if      (m!^($re_acc);($re_currency);(\d{4});(\d\d)/(\d\d)/(\d\d\d\d);([^;]+);([^;]*);([^;]*);($re_money);($re_money);($re_money)$!mgx) {
-            push @rows, {
-                account   => $1, currency => $2, txcode    => $3, day     => $4,
-                month     => $5, year     => $6, desc1     => $7, desc2   => $8,
-                desc3     => $9, amount_db=>$10, amount_cr =>$11, balance =>$12,
-            };
-            die "Invalid data in line $i: both DB & CR amount ".
-                "($rows[-1]{amount_cr} & $rows[-1]{amount_db}) exist!"
-                    if $rows[-1]{amount_cr}+0 && $rows[-1]{amount_db}+0;
-        } elsif      (m!^($re_acc);($re_currency);(\d\d)/(\d\d)/(\d\d\d\d)(\d\d\d\d);([^;]+);([^;]*);([^;]*);($re_money)(DR)?;($re_money)(DR)?$!mgx) {
-            push @rows, {
-                account   => $1, currency=> $2, day       => $3, month   => $4,
-                year      => $5, txcode  => $6, desc1     => $7, desc2   => $8,
-                desc3     => $9, amount  =>$10, amount_db =>$11, balance =>$12,
-                balance_db=>$13,
-            };
-        } elsif (m!^($re_acc);($re_currency);(\d\d)/(\d\d)/(\d\d\d\d)(\d\d\d\d);([^;]+);([^;]*);        ($re_money)(DR)?;($re_money)(DR)?$!mgx) {
-            push @rows, {
-                account  => $1, currency => $2, day    => $3, month     => $4,
-                year     => $5, txcode   => $6, desc1  => $7, desc2     => $8,
-                amount   => $9, amount_db=>$10, balance=>$11, balance_db=>$12,
-            };
+        m!$re_tx! or die "Invalid data in line $i: '$_' doesn't match pattern".
+            " (variant = ".$self->_variant.")";
+        my $row = {
+            account   => $+{acc},
+            currency  => $+{currency},
+            txcode    => $+{txcode},
+            day       => $+{date_d},
+            month     => $+{date_m},
+            year      => $+{date_y},
+            desc1     => $+{desc1},
+            desc2     => $+{desc2},
+        };
+        $row->{desc3}   = $+{desc3} if defined($+{desc3});
+        if ($+{amount_cr}) {
+            my $cr = $+{amount_cr}+0;
+            my $dr = $+{amount_db}+0;
+            $row->{amount} = $cr ? $cr : -$dr;
         } else {
-            return "Invalid syntax in line $i: $_";
+            $row->{amount} = $+{amount} * ($+{amount_dbmarker} ? -1 : 1);
         }
+        $row->{balance} = $+{bal} * ($+{bal_dbmarker} ? -1 : 1);
+        push @rows, $row;
     }
 
     my @tx;
@@ -522,8 +557,7 @@ sub _ps_get_transactions_mcm {
             ($row->{desc2} ? "\n" . $row->{desc2} : "") .
                 ($row->{desc3} ? "\n" . $row->{desc3} : "");
 
-        $tx->{amount}  = $row->{amount_db}+0 ?
-            -$row->{amount_db} : $row->{amount_cr};
+        $tx->{amount}  = $row->{amount}+0;
 
         if (!$last_date || DateTime->compare($last_date, $tx->{date})) {
             $seq = 1;

@@ -1,7 +1,7 @@
 #!perl -Tw
 
 use strict;
-use Test::More tests => (3*10 + 1*12 + 1*11);
+use Test::More;
 use DateTime;
 use File::Slurp;
 use FindBin '$Bin';
@@ -71,6 +71,37 @@ for my $f (
 }
 
 for my $f (
+    ["stmt-mcm-v201103.csv", "mcm, semicolon"],) {
+    my $resp = $ibank->parse_statement(scalar read_file("$Bin/data/$f->[0]"));
+    die "status=$resp->[0], error=$resp->[1]\n" if $resp->[0] != 200;
+    my $stmt = $resp->[2];
+
+    # metadata
+    is($stmt->{account}, "1234567890123", "$f->[1] (account)");
+    ##is($stmt->{account_holder}, "MAJU MUNDUR", "$f->[1] (account_holder)");
+    is(DateTime->compare($stmt->{start_date},
+                         DateTime->new(year=>2010, month=>8, day=>31)),
+       0, "$f->[1] (start_date)");
+    is(DateTime->compare($stmt->{end_date},
+                         DateTime->new(year=>2010, month=>9, day=>1)),
+       0, "$f->[1] (end_date)");
+    is($stmt->{currency}, "IDR", "$f->[1] (currency)");
+
+    # transactions
+    is(scalar(@{ $stmt->{transactions} }), 4, "$f->[1] (num tx)");
+    is(DateTime->compare($stmt->{transactions}[0]{date},
+                         DateTime->new(year=>2010, month=>8, day=>31)),
+       0, "$f->[1] (tx0 date)");
+    is($stmt->{transactions}[0]{amount}, -25000, "$f->[1] (tx0 amount)");
+    is($stmt->{transactions}[0]{seq}, 1, "$f->[1] (tx0 seq)");
+
+    is($stmt->{transactions}[1]{amount}, 1.55, "$f->[1] (credit)");
+
+    is($stmt->{transactions}[2]{seq}, 3, "$f->[1] (seq 1)");
+    is($stmt->{transactions}[3]{seq}, 1, "$f->[1] (seq 2)");
+}
+
+for my $f (
     ["stmt-mcm-v201107.csv", "mcm v201107, semicolon"],) {
     my $resp = $ibank->parse_statement(scalar read_file("$Bin/data/$f->[0]"));
     die "status=$resp->[0], error=$resp->[1]\n" if $resp->[0] != 200;
@@ -100,3 +131,5 @@ for my $f (
     is($stmt->{transactions}[1]{seq}, 1, "$f->[1] (seq 1)");
     is($stmt->{transactions}[3]{seq}, 3, "$f->[1] (seq 2)");
 }
+
+done_testing();

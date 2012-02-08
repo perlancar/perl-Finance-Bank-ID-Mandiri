@@ -821,6 +821,21 @@ Returns:
 C<$status> is 200 if successful or some other 3-letter code if parsing failed.
 C<$stmt> is the result (structure as above, or undef if parsing failed).
 
+Options:
+
+=over 4
+
+=item * return_datetime_obj => BOOL
+
+Default is true. If set to false, the method will return dates as strings with
+this format: 'YYYY-MM-DD HH::mm::SS' (produced by DateTime->dmy . ' ' .
+DateTime->hms). This is to make it easy to pass the data structure into YAML,
+JSON, MySQL, etc. Nevertheless, internally DateTime objects are still used.
+
+=back
+
+Additional notes:
+
 The method can also (or used to) handle copy-pasted text from the GUI browser,
 but this is no longer documented or guaranteed to keep working.
 

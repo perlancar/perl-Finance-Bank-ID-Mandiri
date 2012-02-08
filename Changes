@@ -1,5 +1,13 @@
 Revision history for Finance-Bank-ID-Mandiri
 
+0.22    2012-02-08
+
+        Synchronize to Finance::Bank::ID::Base 0.22. Add script
+        bin/parse-mandiri-statement. Add return_datetime_obj option in
+        parse_statement(). Copy-pasting copy-pasted text from GUI browser is
+        deprecated (except for new MCM format for now).
+
+
 0.21    2011-07-15
 
         [ENHANCEMENTS]

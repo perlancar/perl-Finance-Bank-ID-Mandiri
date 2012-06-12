@@ -644,7 +644,7 @@ parse statement page from all 3 sites. For CMS version, only text version [copy
 paste result] is currently supported and not HTML. For MCM, only semicolon
 format is currently supported.
 
-Warning: This module is neither offical nor is it tested to be 100% save!
+Warning: This module is neither offical nor is it tested to be 100% safe!
 Because of the nature of web-robots, everything may break from one day to the
 other when the underlying web interface changes.
 

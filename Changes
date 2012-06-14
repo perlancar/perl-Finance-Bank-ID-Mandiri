@@ -1,6 +1,6 @@
 Revision history for Finance-Bank-ID-Mandiri
 
-0.22    2012-02-08
+0.22    2012-02-08 (SHARYANTO)
 
         Synchronize to Finance::Bank::ID::Base 0.22. Add script
         bin/parse-mandiri-statement. Add return_datetime_obj option in
@@ -8,33 +8,33 @@ Revision history for Finance-Bank-ID-Mandiri
         deprecated (except for new MCM format for now).
 
 
-0.21    2011-07-15
+0.21    2011-07-15 (SHARYANTO)
 
         [ENHANCEMENTS]
 
         - Support old MCM format (v201103) as well as new one (v201107).
 
 
-0.20    2011-07-13
+0.20    2011-07-13 (SHARYANTO)
 
         [FIXES]
 
         - (build) Fix dzil's dist.ini.
 
 
-0.19    2011-07-13
+0.19    2011-07-13 (SHARYANTO)
 
         [UPDATES]
 
         - Parse new MCM format (July 2011).
 
 
-0.18    2011-06-15
+0.18    2011-06-15 (SHARYANTO)
 
         No functional changes. Fixed missing dependencies [CT].
 
 
-0.17    2011-06-10
+0.17    2011-06-10 (SHARYANTO)
 
         No functional changes.
 
@@ -45,56 +45,56 @@ Revision history for Finance-Bank-ID-Mandiri
         - Some POD fixes.
 
 
-0.16    2011-06-10
+0.16    2011-06-10 (SHARYANTO)
 
         No functional changes. Moved script from examples/ to bin/.
 
 
-0.15    2011-03-08
+0.15    2011-03-08 (SHARYANTO)
         - switch from Mouse to Moo
         - adjustment to latest MCM semicolon format (optional extra field for
           third description line. or is it unescaped semicolon? we'll just have
           to see)
 
-0.14    2010-12-03
+0.14    2010-12-03 (SHARYANTO)
         - change example script to use Log::Any::App
 
-0.13    2010-09-24
+0.13    2010-09-24 (SHARYANTO)
         - make semicolon format parsing stricter, stricter is better
 
-0.12    2010-09-23
+0.12    2010-09-23 (SHARYANTO)
         - enable verify_https in example script
         - add support for parsing new corporate ibanking statement (MCM),
           semicolon format
 
-0.11    2010-09-23
+0.11    2010-09-23 (SHARYANTO)
         - forgot to set https_host
 
-0.10    2010-09-23
+0.10    2010-09-23 (SHARYANTO)
         - uses Finance::Bank::ID::Base v0.10 (new verify_https option)
 
-0.09    2010-06-17
+0.09    2010-06-17 (SHARYANTO)
         - build fixes
         - synchronize version number with Finance::Bank::ID::BCA
 
-0.06    2010-06-11
+0.06    2010-06-11 (SHARYANTO)
         - INCOMPATIBLE CHANGE: parse_statement now always returns
           3-element arrayref instead of depending on list/scalar
           context. Sorry for this, I'm trying make all my HTTP-style
           interface consistent.
 
-0.05    2010-02-17
+0.05    2010-02-17 (SHARYANTO)
         - switch from Moose to Any::Moose (+Mouse as dependency)
 
-0.04    2010-01-13
+0.04    2010-01-13 (SHARYANTO)
         - remove "use Log::Log4perl" in test script
 
-0.03    2010-01-07
+0.03    2010-01-07 (SHARYANTO)
         - switch from Log::Log4perl to Log::Any
         - switch from MakeMaker to Module::Builder
 
-0.02    2009-10-20
+0.02    2009-10-20 (SHARYANTO)
         - Minor fixes.
 
-0.01    2009-10-15
+0.01    2009-10-15 (SHARYANTO)
         First release.

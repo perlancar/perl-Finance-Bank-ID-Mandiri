@@ -1,6 +1,7 @@
-#!perl -Tw
+#!perl
 
 use strict;
+use warnings;
 use Test::More;
 use DateTime;
 use File::Slurp;

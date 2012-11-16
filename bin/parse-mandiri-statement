@@ -7,6 +7,8 @@ use warnings;
 use Finance::Bank::ID::Mandiri;
 use YAML;
 
+# VERSION
+
 my $ibank = Finance::Bank::ID::Mandiri->new;
 my $stmt = join "", <>;
 print Dump $ibank->parse_statement($stmt, return_datetime_obj=>0);

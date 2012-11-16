@@ -1,6 +1,8 @@
 package Finance::Bank::ID::Mandiri;
 
 use 5.010;
+use Log::Any;
+
 use Moo;
 use DateTime;
 

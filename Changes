@@ -1,5 +1,11 @@
 Revision history for Finance-Bank-ID-Mandiri
 
+0.23    2012-11-16 (SHARYANTO)
+
+        - (personal) Sometimes transaction history page is titled 'MUTASI
+          REKENING' instead of 'HISTORI TRANSAKSI'.
+
+
 0.22    2012-02-08 (SHARYANTO)
 
         Synchronize to Finance::Bank::ID::Base 0.22. Add script

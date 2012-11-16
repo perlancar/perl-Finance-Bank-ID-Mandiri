@@ -1,5 +1,20 @@
 Revision history for Finance-Bank-ID-Mandiri
 
+0.24    2012-11-17 (SHARYANTO)
+
+        [UPDATES AND WORKAROUNDS]
+
+        - (personal) Site changed text 'Posisi Saldo' to 'Informasi Saldo' in
+          account details/balance page.
+
+        - Experiment using LWP::Protocol::Net::Curl because it supports
+          HTTP_PROXY and its sslversion=>3 works while HTTPS_VERSION=3 does not
+          work and hangs the website.
+
+        - Use HTTP::Headers::Patch::DontUseStorable to avoid problem when
+          cloning Regexp object.
+
+
 0.23    2012-11-16 (SHARYANTO)
 
         - (personal) Sometimes transaction history page is titled 'MUTASI

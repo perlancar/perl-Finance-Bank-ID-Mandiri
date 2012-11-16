@@ -8,6 +8,7 @@ use Cwd;
 use File::HomeDir;
 use File::Path;
 use File::Slurp;
+use LWP::Protocol::Net::Curl sslversion => 3;
 use Finance::Bank::ID::Mandiri;
 use YAML;
 

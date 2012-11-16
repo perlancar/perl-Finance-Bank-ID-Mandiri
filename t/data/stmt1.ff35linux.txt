@@ -3,7 +3,7 @@
  13 Aug 2009, 22:39:28 	
 HELP
 	
-HISTORI TRANSAKSI
+MUTASI REKENING
 Nomor Transaksi 	: 	0908130005808
 Nomor Rekening 	: 	1234567890123 Rp.
 Jenis Rekening 	: 	Tabungan

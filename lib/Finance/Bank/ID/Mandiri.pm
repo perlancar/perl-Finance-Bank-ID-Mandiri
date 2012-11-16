@@ -111,7 +111,7 @@ sub _parse_accounts {
     $self->logger->debug("Parsing accounts from transaction history form page ...");
     $self->_req(get => [$self->site . "/retail/TrxHistoryInq.do?action=form"]) if $retrieve;
     my $ct = $self->mech->content;
-    $ct =~ /HISTORI TRANSAKSI/ or
+    $ct =~ /(HISTORI TRANSAKSI|MUTASI REKENING)/ or
         die "failed getting transaction history form page";
     $ct =~ m!<select name="fromAccountID">(.+?)</select>!si or
         die "failed getting the list of accounts select box (fromAccountID)";
@@ -202,7 +202,7 @@ sub get_statement {
 
 sub _ps_detect {
     my ($self, $page) = @_;
-    if ($page =~ /(?:^|"header">)HISTORI TRANSAKSI/m) {
+    if ($page =~ /(?:^|"header">)(HISTORI TRANSAKSI|MUTASI REKENING)/m) {
         $self->_variant('ib');
         return '';
     } elsif ($page =~ /^CMS-Mandiri/ms) {

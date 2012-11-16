@@ -152,7 +152,7 @@ sub check_balance {
     $self->_req(get => ["$s/retail/AccountDetail.do?action=result&ACCOUNTID=$acctid"],
                 sub {
                     my ($mech) = @_;
-                    $mech->content =~ m!>Posisi Saldo(?:<[^>]+>\s*)*:\s*(?:<[^>]+>\s*)*(?:Rp\.)&nbsp;([0-9.]+),(\d+)<!s
+                    $mech->content =~ m!>Informasi Saldo(?:<[^>]+>\s*)*:\s*(?:<[^>]+>\s*)*(?:Rp\.)&nbsp;([0-9.]+),(\d+)<!s
                         or return "cannot grep balance in result page";
                     $bal = $self->_stripD($1)+0.01*$2;
                     "";

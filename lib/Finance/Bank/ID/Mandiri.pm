@@ -6,7 +6,7 @@ use Log::Any;
 use Moo;
 use DateTime;
 
-use HTTP::Headers::Patch::DontUseStorable;
+use HTTP::Headers::Patch::DontUseStorable -load_target=>0;
 extends 'Finance::Bank::ID::Base';
 
 # VERSION

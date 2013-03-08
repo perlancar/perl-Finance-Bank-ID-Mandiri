@@ -1,7 +1,6 @@
 package Finance::Bank::ID::Mandiri;
 
 use 5.010;
-use Log::Any;
 
 use Moo;
 use DateTime;
@@ -164,17 +163,27 @@ sub check_balance {
 sub get_statement {
     my ($self, %args) = @_;
     my $s = $self->site;
-    my $max_days = 31;
 
     $self->login;
 
+    $self->logger->debug('Getting statement ...');
     my $mech = $self->mech;
     $self->_req(get => ["$s/retail/TrxHistoryInq.do?action=form"]);
 
     my $today = DateTime->today;
     my $end_date = $args{end_date} || $today;
-    my $start_date = $args{start_date} ||
-        $end_date->clone->subtract(days=>(($args{days} || $max_days)-1));
+    my $start_date = $args{start_date};
+    if (!$start_date) {
+        if (defined $args{days}) {
+            $start_date = $end_date->clone->subtract(days=>($args{days}-1));
+        } else {
+            $start_date = $end_date->clone->subtract(months=>1, days=>1);
+        }
+    }
+    $self->logger->debug('Setting date to %04d-%02d-%02d to %04d-%02d-%02d',
+                     $start_date->year, $start_date->month, $start_date->day,
+                     $end_date->year  , $end_date->month  , $end_date->day  ,
+                     );
 
     $mech->set_fields(
         fromAccountID => $self->_get_an_account_id($args{account}, 0),
@@ -607,7 +616,7 @@ sub _ps_get_transactions_mcm {
 
         my $stmt = $ibank->get_statement(
             account    => ..., # opt, default account used if not undef
-            days       => 31,  # opt
+            days       => 30,  # opt
             start_date => DateTime->new(year=>2009, month=>10, day=>6),
                                # opt, takes precedence over 'days'
             end_date   => DateTime->today, # opt, takes precedence over 'days'
@@ -780,12 +789,15 @@ already selected account.
 
 =item * days
 
-Optional. Number of days between 1 and 31. If days is 1, then start date and end
-date will be the same. Default is 31.
+Optional. Number of days. If days is 1, then start date and end date will be the
+same.
 
 =item * start_date
 
-Optional. Default is end_date - days.
+Optional. Default is C<end_date> - 1 month - 1, which seems to be the current
+limit set by the bank (for example, if C<end_date> is 2013-03-08, then
+C<start_date> will be set to 2013-02-07). If not set and C<days> is set, will be
+set to C<end_date> - C<days>.
 
 =item * end_date
 

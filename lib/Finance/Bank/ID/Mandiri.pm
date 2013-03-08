@@ -5,6 +5,7 @@ use 5.010;
 use Moo;
 use DateTime;
 
+use HTTP::Headers;
 use HTTP::Headers::Patch::DontUseStorable -load_target=>0;
 extends 'Finance::Bank::ID::Base';
 

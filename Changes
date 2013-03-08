@@ -1,5 +1,16 @@
 Revision history for Finance-Bank-ID-Mandiri
 
+0.25    2013-03-08 (SHARYANTO)
+
+        - get_statement(): Get error message from statement form (so instead of
+          'failed getting statement' generic error, you can get e.g. 'Jangka
+          waktu tidak valid').
+
+        - get_statement(): Instead of 31 days, set default period to 1 month
+          (which can be 28/29/30/31 days, depending on the month). This seems to
+          be the bank's limit.
+
+
 0.24    2012-11-17 (SHARYANTO)
 
         [UPDATES AND WORKAROUNDS]

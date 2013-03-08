@@ -27,7 +27,7 @@ use App::Options (
                        default => File::HomeDir->my_home . "/mandiri" },
         log_dir   => { type => 'string',   # req
                        default => File::HomeDir->my_home . "/mandiri/logs" },
-        days      => { type => 'string', required => 0, default => 31 },
+        days      => { type => 'string', required => 0 },
     },
 );
 
@@ -117,8 +117,9 @@ dir (defaults to ~/mandiri/logs).
 =head1 DESCRIPTION
 
 This is a command-line script which you can run from cron or whatever to
-conveniently download Bank Mandiri statements. By default, it downloads 31-day's
-worth of statements to ~/mandiri/. To change this, use --days and --data_dir.
+conveniently download Bank Mandiri statements. By default, it downloads 1
+month's worth of statements to ~/mandiri/. To change this, use --days and
+--data_dir.
 
 
 =head1 SEE ALSO

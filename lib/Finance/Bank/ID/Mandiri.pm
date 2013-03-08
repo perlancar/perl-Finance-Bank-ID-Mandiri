@@ -194,8 +194,10 @@ sub get_statement {
     $self->_req(submit => [],
                 sub {
                     my ($mech) = @_;
-                    $mech->content =~ /saldo/i or return "failed getting statement";
-                    "";
+                    $mech->content =~ /saldo/i and return "";
+                    $mech->content =~ !<font class="alert">(.+)</font>!
+                        and return $1;
+                    return "failed getting statement";
                 });
 
     my $resp = $self->parse_statement($self->mech->content);

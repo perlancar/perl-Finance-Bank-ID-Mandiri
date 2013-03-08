@@ -195,7 +195,7 @@ sub get_statement {
                 sub {
                     my ($mech) = @_;
                     $mech->content =~ /saldo/i and return "";
-                    $mech->content =~ !<font class="alert">(.+)</font>!
+                    $mech->content =~ m!<font class="alert">(.+)</font>!
                         and return $1;
                     return "failed getting statement";
                 });

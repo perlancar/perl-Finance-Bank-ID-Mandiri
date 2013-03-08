@@ -176,14 +176,17 @@ sub get_statement {
     if (!$start_date) {
         if (defined $args{days}) {
             $start_date = $end_date->clone->subtract(days=>($args{days}-1));
+            $self->logger->debugf(
+                'Setting start_date to %04d-%02d-%02d (end_date - %d days)',
+                $start_date->year, $start_date->month, $start_date->day,
+                $args{days});
         } else {
-            $start_date = $end_date->clone->subtract(months=>1, days=>1);
+            $start_date = $end_date->clone->subtract(months=>1);
+            $self->logger->debugf(
+                'Setting start_date to %04d-%02d-%02d (end_date - 1mo)',
+                $start_date->year, $start_date->month, $start_date->day);
         }
     }
-    $self->logger->debug('Setting date to %04d-%02d-%02d to %04d-%02d-%02d',
-                     $start_date->year, $start_date->month, $start_date->day,
-                     $end_date->year  , $end_date->month  , $end_date->day  ,
-                     );
 
     $mech->set_fields(
         fromAccountID => $self->_get_an_account_id($args{account}, 0),
@@ -794,10 +797,10 @@ same.
 
 =item * start_date
 
-Optional. Default is C<end_date> - 1 month - 1, which seems to be the current
-limit set by the bank (for example, if C<end_date> is 2013-03-08, then
-C<start_date> will be set to 2013-02-07). If not set and C<days> is set, will be
-set to C<end_date> - C<days>.
+Optional. Default is C<end_date> - 1 month, which seems to be the current limit
+set by the bank (for example, if C<end_date> is 2013-03-08, then C<start_date>
+will be set to 2013-02-08). If not set and C<days> is set, will be set to
+C<end_date> - C<days>.
 
 =item * end_date
 

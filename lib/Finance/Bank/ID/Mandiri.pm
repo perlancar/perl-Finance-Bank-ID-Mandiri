@@ -596,6 +596,12 @@ sub _ps_get_transactions_mcm {
 
 =head1 SYNOPSIS
 
+If you just want to download banking statements, and you use Linux/Unix, you
+might want to use the L<download-mandiri> script instead of having to deal with
+this library directly.
+
+If you want to use the library in your Perl application:
+
     use Finance::Bank::ID::Mandiri;
 
     # FBI::Mandiri uses Log::Any. to show logs, use something like:

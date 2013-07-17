@@ -1,5 +1,10 @@
 Revision history for Finance-Bank-ID-Mandiri
 
+0.26    2013-07-17 (SHARYANTO)
+
+        No functional changes. Add pointer for casual new users.
+
+
 0.25    2013-03-08 (SHARYANTO)
 
         - get_statement(): Get error message from statement form (so instead of

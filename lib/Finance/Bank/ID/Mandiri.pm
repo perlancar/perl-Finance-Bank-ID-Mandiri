@@ -1,6 +1,6 @@
 package Finance::Bank::ID::Mandiri;
 
-use 5.010;
+use 5.010001;
 
 use Moo;
 use DateTime;

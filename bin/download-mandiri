@@ -27,6 +27,9 @@ use App::Options (
                        default => File::HomeDir->my_home . "/mandiri" },
         log_dir   => { type => 'string',   # req
                        default => File::HomeDir->my_home . "/mandiri/logs" },
+        save_dir  => { type => 'string',   # req
+                       default => File::HomeDir->my_home . "/mandiri/logs/save" },
+        mode      => { type => 'string', default => '' },
         days      => { type => 'string', required => 0 },
     },
 );
@@ -60,6 +63,8 @@ my $ibank = Finance::Bank::ID::Mandiri->new(
     logger       => $log,
     logger_dump  => Log::Any->get_logger(category => "Dumps"),
     verify_https => 1,
+    save_dir     => $App::options{save_dir},
+    mode         => $App::options{mode},
 );
 
 eval {

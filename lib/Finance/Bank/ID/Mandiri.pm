@@ -70,31 +70,40 @@ sub login {
 
     $self->logger->debug('Logging in ...');
     $self->_req(get => [$self->site . "/retail/Login.do?action=form&lang=in_ID"],
-                sub {
-                    my ($mech) = @_;
-                    $mech->content =~ /LoginForm/ or return "no login form";
-                    "";
+                {
+                    id => 'login_form',
+                    after_request => sub {
+                        my ($mech) = @_;
+                        $mech->content =~ /LoginForm/ or return "no login form";
+                        "";
+                    },
                 });
     $self->mech->set_visible(
                              $self->username,
                              $self->password,
                              [image=>"x"]);
     $self->_req(submit => [],
-                sub {
-                    my ($mech) = @_;
-                    $mech->content =~ m!<font class="errorMessage">(.+?)</font>! and return $1;
-                    $mech->content =~ /<frame\s.+Welcome/ and return; # success
-                    $mech->content =~ m!<font class="alert">(\w.+?)</font>! and return $1;
-                    $mech->content =~ /LoginForm/ and
-                        return "submit failed, still getting login form, probably problem with image button";
-                    "unknown login result page";
+                {
+                    id => 'login',
+                    after_request => sub {
+                        my ($mech) = @_;
+                        $mech->content =~ m!<font class="errorMessage">(.+?)</font>! and return $1;
+                        $mech->content =~ /<frame\s.+Welcome/ and return; # success
+                        $mech->content =~ m!<font class="alert">(\w.+?)</font>! and return $1;
+                        $mech->content =~ /LoginForm/ and
+                            return "submit failed, still getting login form, probably problem with image button";
+                        "unknown login result page";
+                    },
                 });
     $self->_req(get => [$self->site . "/retail/Welcome.do?action=result"],
-                sub {
-                    my ($mech) = @_;
-                    $mech->content !~ /SELAMAT DATANG/ and
-                        return "failed getting welcome screen";
-                    "";
+                {
+                    id => 'welcome',
+                    after_request => sub {
+                        my ($mech) = @_;
+                        $mech->content !~ /SELAMAT DATANG/ and
+                            return "failed getting welcome screen";
+                        "";
+                    },
                 });
     $self->logged_in(1);
 }
@@ -104,7 +113,8 @@ sub logout {
 
     return 1 unless $self->logged_in;
     $self->logger->debug('Logging out ...');
-    $self->_req(get => [$self->site . "/retail/Logout.do?action=result"]);
+    $self->_req(get => [$self->site . "/retail/Logout.do?action=result"],
+                {id => 'logout'});
     $self->logged_in(0);
 }
 
@@ -112,7 +122,8 @@ sub _parse_accounts {
     my ($self, $retrieve) = @_;
     $self->login;
     $self->logger->debug("Parsing accounts from transaction history form page ...");
-    $self->_req(get => [$self->site . "/retail/TrxHistoryInq.do?action=form"]) if $retrieve;
+    $self->_req(get => [$self->site . "/retail/TrxHistoryInq.do?action=form"],
+            {id => 'txhist_form-parse_accounts'}) if $retrieve;
     my $ct = $self->mech->content;
     $ct =~ /(HISTORI TRANSAKSI|MUTASI REKENING)/ or
         die "failed getting transaction history form page";
@@ -151,12 +162,15 @@ sub check_balance {
     my $acctid = $self->_get_an_account_id($account, 1);
     my $bal;
     $self->_req(get => ["$s/retail/AccountDetail.do?action=result&ACCOUNTID=$acctid"],
-                sub {
-                    my ($mech) = @_;
-                    $mech->content =~ m!>Informasi Saldo(?:<[^>]+>\s*)*:\s*(?:<[^>]+>\s*)*(?:Rp\.)&nbsp;([0-9.]+),(\d+)<!s
-                        or return "cannot grep balance in result page";
-                    $bal = $self->_stripD($1)+0.01*$2;
-                    "";
+                {
+                    id => "check_balance",
+                    after_request => sub {
+                        my ($mech) = @_;
+                        $mech->content =~ m!>Informasi Saldo(?:<[^>]+>\s*)*:\s*(?:<[^>]+>\s*)*(?:Rp\.)&nbsp;([0-9.]+),(\d+)<!s
+                            or return "cannot grep balance in result page";
+                        $bal = $self->_stripD($1)+0.01*$2;
+                        "";
+                    },
                 });
     $bal;
 }
@@ -169,7 +183,8 @@ sub get_statement {
 
     $self->logger->debug('Getting statement ...');
     my $mech = $self->mech;
-    $self->_req(get => ["$s/retail/TrxHistoryInq.do?action=form"]);
+    $self->_req(get => ["$s/retail/TrxHistoryInq.do?action=form"],
+                {id=>"txhist_form-get_statement"});
 
     my $today = DateTime->today;
     my $end_date = $args{end_date} || $today;
@@ -205,12 +220,15 @@ sub get_statement {
     $mech->set_fields(action => "result");
 
     $self->_req(submit => [],
-                sub {
-                    my ($mech) = @_;
-                    $mech->content =~ /saldo/i and return "";
-                    $mech->content =~ m!<font class="alert">(.+)</font>!
-                        and return $1;
-                    return "failed getting statement";
+                {
+                    id => "get_statement",
+                    after_request => sub {
+                        my ($mech) = @_;
+                        $mech->content =~ /saldo/i and return "";
+                        $mech->content =~ m!<font class="alert">(.+)</font>!
+                            and return $1;
+                        return "failed getting statement";
+                    },
                 });
 
     my $resp = $self->parse_statement($self->mech->content);
@@ -864,4 +882,3 @@ The method can also (or used to) handle copy-pasted text from the GUI browser,
 but this is no longer documented or guaranteed to keep working.
 
 =cut
-

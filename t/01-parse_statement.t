@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use Test::More;
 use DateTime;
-use File::Slurp;
+use File::Slurp::Tiny qw(read_file);
 use FindBin '$Bin';
 use Finance::Bank::ID::Mandiri;
 

@@ -1,130 +1,144 @@
 #!perl
 
+# DATE
+# VERSION
+
 use 5.010;
 use strict;
 use warnings;
+use Log::Any '$log';
 
-use Cwd;
-use File::HomeDir;
-use File::Path;
-use File::Slurp::Tiny qw(write_file);
-use LWP::Protocol::Net::Curl sslversion => 3;
-use Finance::Bank::ID::Mandiri;
-use YAML;
+our %SPEC;
 
-# VERSION
-
-# we don't use required=>1 because App::Options still works in BEGIN phase and
-# thus breaks perl -c.
-
-use App::Options (
-    option => {
-        profile   => { type => 'string', default => 'default' },
-        account   => { type => 'string', default => "" },
-        username  => { type => 'string' }, # req
-        password  => { type => 'string' }, # req
-        data_dir  => { type => 'string',   # req
-                       default => File::HomeDir->my_home . "/mandiri" },
-        log_dir   => { type => 'string',   # req
-                       default => File::HomeDir->my_home . "/mandiri/logs" },
-        save_dir  => { type => 'string',   # req
-                       default => File::HomeDir->my_home . "/mandiri/logs/save" },
-        mode      => { type => 'string', default => '' },
-        days      => { type => 'string', required => 0 },
+$SPEC{download_mandiri} = {
+    v => 1.1,
+    args => {
+        username  => {schema=>'str*', req=>1},
+        password  => {schema=>'str*', req=>1},
+        account   => {schema=>'str*'},
+        data_dir  => {schema=>'str*'},
+        log_dir   => {schema=>'str*'},
+        save_dir  => {schema=>'str*'},
+        mode      => {
+            summary=>'Passed to Finance::Bank::ID::Mandiri constructor',
+            schema=>'str*',
+            default=>'',
+        },
+        days      => {schema=>'int*', default=>31},
     },
-);
-
-use vars qw($Log_Level);
-BEGIN { $Log_Level = "debug" }
-
-use Log::Any::App '$log',
-    -category_level => {Dumps=>'off'},
-    -file           => {
-        path           => "$App::options{log_dir}/main.log",
-    },
-    -dir            => {
-        path           => "$App::options{log_dir}/dumps",
-        level          => 'off',
-        # currently we always dump, Log::Any::App > 0.23 will support specifying
-        # sub { ... } to refer to general level
-        category_level => {Dumps => 'trace'},
-    };
-
-for (qw/username password data_dir log_dir/) {
-    defined($App::options{$_}) or die "Missing required argument: $_\n";
-}
-
-mkpath($App::options{data_dir})                       unless (-d $App::options{data_dir});
-die "Can't create data_dir `$App::options{data_dir}'" unless (-d $App::options{data_dir});
-
-my $ibank = Finance::Bank::ID::Mandiri->new(
-    username     => $App::options{username},
-    password     => $App::options{password},
-    logger       => $log,
-    logger_dump  => Log::Any->get_logger(category => "Dumps"),
-    verify_https => 1,
-    save_dir     => $App::options{save_dir},
-    mode         => $App::options{mode},
-);
-
-eval {
-    my $bal = $ibank->check_balance;
-    $log->debug("Balance: ".$bal);
-
-    my $stmt = $ibank->get_statement(
-        account => $App::options{account},
-        days => $App::options{days},
-        parse_opts => {return_datetime_obj=>0},
-    );
-    my $filename = sprintf "%s/mandiri.statement.%s.%s.to.%s.yaml",
-        $App::options{data_dir},
-        $stmt->{account},
-        $stmt->{start_date},
-        $stmt->{end_date};
-    $filename =~ s/[: ]//g; # : is for windows
-    $log->info("Writing statements to YAML file `$filename' ...");
-
-    # insert balance to statement (since mandiri statement doesn't contain any
-    # balance information)
-    $stmt->{_balance} = $bal;
-
-    write_file($filename, Dump($stmt));
 };
 
-if ($@) {
-    $log->error("die: $@");
+sub download_mandiri {
+    require File::HomeDir;
+
+    my %args = @_;
+
+    my $data_dir = $args{data_dir} // File::HomeDir->my_home . "/mandiri";
+    my $log_dir  = $args{log_dir}  // File::HomeDir->my_home . "/mandiri/logs";
+    my $save_dir = $args{save_dir} // File::HomeDir->my_home . "/mandiri/logs/save";
+
+    local $ENV{SCREEN_LOG_LEVEL} = 'debug'
+        if (-t STDOUT) && !$ENV{SCREEN_LOG_LEVEL};
+    require Log::Any::App;
+    Log::Any::App::init([
+        -category_level => {Dumps=>'off'},
+        -file           => {
+            path           => "$log_dir/main.log",
+        },
+        -dir            => {
+            path           => "$log_dir/dumps",
+            level          => 'off',
+            # currently we always dump, Log::Any::App > 0.23 will support
+            # specifying sub { ... } to refer to general level
+            category_level => {Dumps => 'trace'},
+        },
+    ]);
+
+    require File::Path;
+    File::Path::mkpath($data_dir) unless -d $data_dir;
+    die "Can't create data_dir `$data_dir'" unless -d $data_dir;
+
+    $log->info("Start session");
+
+    require Finance::Bank::ID::Mandiri;
+    my $ibank = Finance::Bank::ID::Mandiri->new(
+        username     => $args{username},
+        password     => $args{password},
+        logger       => $log,
+        logger_dump  => Log::Any->get_logger(category => "Dumps"),
+        verify_https => 1,
+        save_dir     => $save_dir,
+        mode         => $args{mode},
+    );
+
+    eval {
+        my $bal = $ibank->check_balance;
+        $log->debug("Balance: $bal");
+
+        my $stmt = $ibank->get_statement(
+            account    => $args{account},
+            days       => $args{days},
+            parse_opts => {return_datetime_obj=>0},
+        );
+        my $filename = sprintf("%s/mandiri.statement.%s.%s.to.%s.yaml",
+                               $data_dir,
+                               $stmt->{account},
+                               $stmt->{start_date},
+                               $stmt->{end_date});
+
+        # insert balance to statement (since mandiri statement doesn't contain
+        # any balance information)
+        $stmt->{_balance} = $bal;
+
+        $filename =~ s/[: ]//g; # : is for windows
+        $log->info("Writing statements to YAML file `$filename' ...");
+        require File::Slurp::Tiny;
+        require YAML::Syck;
+        File::Slurp::Tiny::write_file($filename, YAML::Syck::Dump($stmt));
+    };
+
+    if ($@) {
+        $log->error("die: $@");
+    }
+
+    # no matter what, try to logout so we're not locked out for 10 minutes,
+    # annoying
+    eval { $ibank->logout };
+
+    $log->info("End session");
+    [200];
 }
 
-# no matter what, try to logout so we're not locked out for 10 minutes, annoying
-eval { $ibank->logout; };
-
-$log->info("End session");
+require Perinci::CmdLine;
+Perinci::CmdLine->new(
+    url => '/main/download_mandiri',
+    log_any_app => 0, # because we'll init ourselves inside download_mandiri()
+)->run;
 
 # ABSTRACT: Download Mandiri statements
 # PODNAME: download-mandiri
 
 =head1 SYNOPSIS
 
-First, put your username and password in ~/.app/download-mandiri.conf, e.g.:
+First, put your username and password in C<~/download-mandiri.conf>, e.g.:
 
- [ALL]
  username = ABCDEF0123
  password = 123456
 
 Then:
 
- $ download-mandiri
+ % download-mandiri
 
-Get your statements in data dir (defaults to ~/mandiri/). See logs in your log
-dir (defaults to ~/mandiri/logs).
+Get your statements in data dir (defaults to C<~/mandiri/>). See logs in your
+log dir (defaults to C<~/mandiri/logs>).
 
 
 =head1 DESCRIPTION
 
 This is a command-line script which you can run from cron or whatever to
 conveniently download Bank Mandiri statements. By default, it downloads 1
-month's worth of statements to ~/mandiri/. To change this, use --days and
---data_dir.
+month's worth of statements to C<~/mandiri/>. To change this, use C<--days> and
+C<--data_dir>.
 
 
 =head1 SEE ALSO

@@ -1,32 +1,35 @@
 #!perl
 
+# DATE
+# VERSION
+
 use 5.010;
 use strict;
 use warnings;
 
 use Finance::Bank::ID::Mandiri;
-use YAML;
+use Perinci::CmdLine::Any;
 
-# VERSION
+our %SPEC;
 
-my $ibank = Finance::Bank::ID::Mandiri->new;
-my $stmt = join "", <>;
-print Dump $ibank->parse_statement($stmt, return_datetime_obj=>0);
+$SPEC{run} = {
+    v => 1.1,
+    summary => 'Parse Mandiri internet banking statement',
+    args => {
+        statement => {
+            schema => 'str*',
+            cmdline_src => 'stdin_or_files',
+        },
+    },
+};
+sub run {
+    my %args = @_;
 
-1;
-# ABSTRACT: Parse Bank Mandiri internet banking statement
+    my $ibank = Finance::Bank::ID::Mandiri->new;
+    $ibank->parse_statement($args{statement}, return_datetime_obj=>0);
+}
+
+Perinci::CmdLine::Any->new(url => '/main/run')->run;
+
+# ABSTRACT: Parse Mandiri internet banking statement
 # PODNAME: parse-mandiri-statement
-
-=head1 SYNOPSIS
-
- % parse-mandiri-statement < statement-page
-
-
-=head1 DESCRIPTION
-
-
-=head1 SEE ALSO
-
-L<Finance::Bank::ID::Mandiri>
-
-=cut

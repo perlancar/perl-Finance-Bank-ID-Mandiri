@@ -1,5 +1,19 @@
 Revision history for Finance-Bank-ID-Mandiri
 
+0.29     2014-08-26 (SHARYANTO)
+
+         - Remove the usage of LWP::Protocol::Net::Curl (doesn't seem to be
+           needed anymore).
+
+         - bin/download-mandiri: Replace App::Options with Perinci::CmdLine.
+           Location of config file is now changed, as per Perinci::CmdLine, from
+           ~/.app/download-mandiri.conf to ~/download-mandiri.conf. The syntax
+           of the configuration is the same (it's actually now IOD, but IOD
+           supports the App::Options configuration syntax).
+
+         - [Incompat] bin/download-mandiri: --profile is now --config-profile.
+
+
 0.28    2014-05-17 (SHARYANTO)
 
         - No functional changes.

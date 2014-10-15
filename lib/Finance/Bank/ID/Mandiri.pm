@@ -881,4 +881,12 @@ Additional notes:
 The method can also (or used to) handle copy-pasted text from the GUI browser,
 but this is no longer documented or guaranteed to keep working.
 
+
+=head1 FAQ
+
+=head2 (2014) I'm getting error message: "Can't connect to ib.bankmandiri.co.id:443 at ..."
+
+Try upgrading your IO::Socket::SSL. It stalls with IO::Socket::SSL version 1.76,
+but works with newer versions (e.g. 1.989).
+
 =cut

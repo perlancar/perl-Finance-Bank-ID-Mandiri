@@ -1,5 +1,13 @@
 Revision history for Finance-Bank-ID-Mandiri
 
+0.30     2014-10-15 (PERLANCAR)
+
+         - No functional changes.
+
+         - Add FAQ entry about connection failure with old versions of
+           IO::Socket::SSL.
+
+
 0.29     2014-08-26 (SHARYANTO)
 
          - Remove the usage of LWP::Protocol::Net::Curl (doesn't seem to be

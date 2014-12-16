@@ -31,5 +31,5 @@ sub run {
 
 Perinci::CmdLine::Any->new(url => '/main/run')->run;
 
-# ABSTRACT: Parse Mandiri internet banking statement
+# ABSTRACT:
 # PODNAME:

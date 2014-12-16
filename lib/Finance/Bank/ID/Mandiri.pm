@@ -1,5 +1,8 @@
 package Finance::Bank::ID::Mandiri;
 
+# DATE
+# VERSION
+
 use 5.010001;
 
 use Moo;
@@ -8,8 +11,6 @@ use DateTime;
 use HTTP::Headers;
 use HTTP::Headers::Patch::DontUseStorable -load_target=>0;
 extends 'Finance::Bank::ID::Base';
-
-# VERSION
 
 has _variant => (is => 'rw');
 has _re_tx   => (is => 'rw');

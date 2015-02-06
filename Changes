@@ -1,5 +1,12 @@
 Revision history for Finance-Bank-ID-Mandiri
 
+0.31    2015-02-06 (PERLANCAR)
+
+	- No functional changes.
+
+	- Adjust to Perinci::CmdLine -> Perinci::CmdLine::Classic.
+
+
 0.30     2014-10-15 (PERLANCAR)
 
          - No functional changes.

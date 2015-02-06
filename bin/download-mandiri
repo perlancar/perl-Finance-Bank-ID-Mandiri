@@ -110,8 +110,8 @@ sub download_mandiri {
     [200];
 }
 
-require Perinci::CmdLine;
-Perinci::CmdLine->new(
+require Perinci::CmdLine::Classic;
+Perinci::CmdLine::Classic->new(
     url => '/main/download_mandiri',
     log_any_app => 0, # because we'll init ourselves inside download_mandiri()
 )->run;

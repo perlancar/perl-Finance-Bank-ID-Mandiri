@@ -10,6 +10,11 @@ use Log::Any '$log';
 
 our %SPEC;
 
+# we have to use this temporarily for now, this is not secure, but well ...
+if (!defined($ENV{PERL_LWP_SSL_VERIFY_HOSTNAME})) {
+    $ENV{PERL_LWP_SSL_VERIFY_HOSTNAME} = 0;
+}
+
 $SPEC{download_mandiri} = {
     v => 1.1,
     summary => 'Download Mandiri statements',

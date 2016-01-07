@@ -1,5 +1,16 @@
 Revision history for Finance-Bank-ID-Mandiri
 
+0.33    2016-01-07 (PERLANCAR)
+
+	- Handle when statement page is empty ('tidak ditemukan catatan'),
+	  currently untested because I got a timeout then can't try again
+	  for a while because 'user already login'.
+
+	- Update regex for grep-ing balance.
+
+	- Tweak example code.
+
+
 0.32    2015-04-28 (PERLANCAR)
 
 	- No functional changes.

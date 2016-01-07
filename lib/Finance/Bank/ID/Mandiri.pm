@@ -167,7 +167,7 @@ sub check_balance {
                     id => "check_balance",
                     after_request => sub {
                         my ($mech) = @_;
-                        $mech->content =~ m!>Informasi Saldo(?:<[^>]+>\s*)*:\s*(?:<[^>]+>\s*)*(?:Rp\.)&nbsp;([0-9.]+),(\d+)<!s
+                        $mech->content =~ m!>Informasi Saldo(?:<[^>]+>\s*)*:\s*(?:<[^>]+>\s*)*(?:Rp\.)&nbsp;([0-9.]+),(\d+)\s*<!s
                             or return "cannot grep balance in result page";
                         $bal = $self->_stripD($1)+0.01*$2;
                         "";

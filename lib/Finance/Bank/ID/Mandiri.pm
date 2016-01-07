@@ -225,7 +225,7 @@ sub get_statement {
                     id => "get_statement",
                     after_request => sub {
                         my ($mech) = @_;
-                        $mech->content =~ /saldo/i and return "";
+                        $mech->content =~ />Keterangan Transaksi</ and return "";
                         $mech->content =~ m!<font class="alert">(.+)</font>!
                             and return $1;
                         return "failed getting statement";
@@ -290,8 +290,11 @@ sub _ps_get_metadata_ib {
     $stmt->{account} = $1;
     $stmt->{currency} = ($2 eq 'Rp.' ? 'IDR' : $2);
 
+    my $empty_stmt = $page =~ />Tidak ditemukan catatan</ ? 1:0;
+
     # check completeness, because the latest transactions are displayed first
-    unless ($page =~ /(?:|>)Saldo Akhir(?:\s+|(?:<[^>]+>\s*)*):(?:\s+|(?:<[^>]+>\s*)*)\d/m) {
+    unless ($empty_stmt ||
+                $page =~ /(?:|>)Saldo Akhir(?:\s+|(?:<[^>]+>\s*)*):(?:\s+|(?:<[^>]+>\s*)*)\d/m) {
       return "statement page probably truncated in the middle, try to input the whole page";
     }
 
@@ -322,15 +325,20 @@ sub _ps_get_metadata_ib {
         $stmt->{end_date} = $today;
     }
 
-    unless ($page =~ /(?:^|>)Total Kredit(?:\s+|(?:<[^>]+>\s*)*):(?:\s+|(?:<[^>]+>\s*)*)([0-9,.]+)[.,](\d\d)/m) {
-      return "can't get total credit, $adv1";
-    }
-    $stmt->{_total_credit_in_stmt} = $self->_stripD($1) + 0.01*$2;
+    if ($empty_stmt) {
+        $stmt->{_total_credit_in_stmt} = 0;
+        $stmt->{_total_debit_in_stmt}  = 0;
+    } else {
+        unless ($page =~ /(?:^|>)Total Kredit(?:\s+|(?:<[^>]+>\s*)*):(?:\s+|(?:<[^>]+>\s*)*)([0-9,.]+)[.,](\d\d)/m) {
+            return "can't get total credit, $adv1";
+        }
+        $stmt->{_total_credit_in_stmt} = $self->_stripD($1) + 0.01*$2;
 
-    unless ($page =~ /(?:^|>)Total Debet(?:\s+|(?:<[^>]+>\s*)*):(?:\s+|(?:<[^>]+>\s*)*)([0-9,.]+)[.,](\d\d)/m) {
-      return "can't get total debit, $adv1";
+        unless ($page =~ /(?:^|>)Total Debet(?:\s+|(?:<[^>]+>\s*)*):(?:\s+|(?:<[^>]+>\s*)*)([0-9,.]+)[.,](\d\d)/m) {
+            return "can't get total debit, $adv1";
+        }
+        $stmt->{_total_debit_in_stmt} = $self->_stripD($1) + 0.01*$2;
     }
-    $stmt->{_total_debit_in_stmt} = $self->_stripD($1) + 0.01*$2;
 
     "";
 }
@@ -423,6 +431,11 @@ sub _ps_get_transactions {
 sub _ps_get_transactions_ib {
     my ($self, $page, $stmt) = @_;
 
+    my @tx;
+    my @skipped_tx;
+
+    goto DONE if $page =~ m!>Tidak ditemukan catatan<!;
+
     my @e;
     # text version
     while ($page =~ m!^(\d\d)/(\d\d)/(\d\d\d\d)\s*\t\s*((?:[^\t]|\n)*?)\s*\t\s*([0-9.]+),(\d\d)\s*\t\s*([0-9.]+),(\d\d)!mg) {
@@ -444,8 +457,6 @@ sub _ps_get_transactions_ib {
     # when they say "kecil ke besar" they actually mean showing the latest transactions first
     @e = reverse @e;
 
-    my @tx;
-    my @skipped_tx;
     my $seq;
     my $i = 0;
     my $last_date;
@@ -481,6 +492,8 @@ sub _ps_get_transactions_ib {
             push @tx, $tx;
         }
     }
+
+  DONE:
     $stmt->{transactions} = \@tx;
     $stmt->{skipped_transactions} = \@skipped_tx;
     "";

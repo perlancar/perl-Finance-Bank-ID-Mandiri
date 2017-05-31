@@ -23,28 +23,28 @@ my $re_date1       = qr!(?:\d{2}/\d{2}/\d{4})!; # 25/12/2010
 my $re_txcode      = qr!(?:\d{4})!;
 
 # original version when support first added
-my $re_mcm_v201009 = qr!^(?<acc>$re_acc);(?<currency>$re_currency);
-                        (?<date_d>\d\d)/(?<date_m>\d\d)/(?<date_y>\d\d\d\d)
-                        (?<txcode>$re_txcode);
-                        (?<desc1>[^;]+);(?<desc2>[^;]*);
-                        (?<amount>$re_money)(?<amount_dbmarker>DR)?;
-                        (?<bal>$re_money)(?<bal_dbmarker>DR)?$!mx;
+our $re_mcm_v201009 = qr!^(?<acc>$re_acc);(?<currency>$re_currency);
+                         (?<date_d>\d\d)/(?<date_m>\d\d)/(?<date_y>\d\d\d\d)
+                         (?<txcode>$re_txcode);
+                         (?<desc1>[^;]+);(?<desc2>[^;]*);
+                         (?<amount>$re_money)(?<amount_dbmarker>DR)?;
+                         (?<bal>$re_money)(?<bal_dbmarker>DR)?$!mx;
 # what's new: third line argument
-my $re_mcm_v201103 = qr!^(?<acc>$re_acc);(?<currency>$re_currency);
-                        (?<date_d>\d\d)/(?<date_m>\d\d)/(?<date_y>\d\d\d\d)
-                        (?<txcode>$re_txcode);
-                        (?<desc1>[^;]+);(?<desc2>[^;]*);(?:(?<desc3>[^;]*);)?
-                        (?<amount>$re_money)(?<amount_dbmarker>DR)?;
-                        (?<bal>$re_money)(?<bal_dbmarker>DR)?$!mx;
+our $re_mcm_v201103 = qr!^(?<acc>$re_acc);(?<currency>$re_currency);
+                         (?<date_d>\d\d)/(?<date_m>\d\d)/(?<date_y>\d\d\d\d)
+                         (?<txcode>$re_txcode);
+                         (?<desc1>[^;]+);(?<desc2>[^;]*);(?:(?<desc3>[^;]*);)?
+                         (?<amount>$re_money)(?<amount_dbmarker>DR)?;
+                         (?<bal>$re_money)(?<bal_dbmarker>DR)?$!mx;
 # what's new: txcode moved to 3rd column, credit & debit amount split into 2
 # fields
-my $re_mcm_v201107 = qr!^(?<acc>$re_acc);(?<currency>$re_currency);
-                        (?<txcode>$re_txcode);
-                        (?<date_d>\d\d)/(?<date_m>\d\d)/(?<date_y>\d\d\d\d);
-                        (?<desc1>[^;]+);(?<desc2>[^;]*);(?:(?<desc3>[^;]*);)?
-                        (?<amount_db>$re_money);
-                        (?<amount_cr>$re_money);
-                        (?<bal>$re_moneymin)!mx; # maybe? no more DR marker
+our $re_mcm_v201107 = qr!^(?<acc>$re_acc);(?<currency>$re_currency);
+                         (?<txcode>$re_txcode);
+                         (?<date_d>\d\d)/(?<date_m>\d\d)/(?<date_y>\d\d\d\d);
+                         (?<desc1>[^;]+);(?<desc2>[^;]*);(?:(?<desc3>[^;]*);)?
+                         (?<amount_db>$re_money);
+                         (?<amount_cr>$re_money);
+                         (?<bal>$re_moneymin)!mx; # maybe? no more DR marker
 
 sub _make_readonly_inputs_rw {
     my ($self, @forms) = @_;

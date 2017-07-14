@@ -193,15 +193,15 @@ sub get_statement {
     if (!$start_date) {
         if (defined $args{days}) {
             $start_date = $end_date->clone->subtract(days=>($args{days}-1));
-            $self->logger->debugf(
+            $self->logger->debug(sprintf(
                 'Setting start_date to %04d-%02d-%02d (end_date - %d days)',
                 $start_date->year, $start_date->month, $start_date->day,
-                $args{days});
+                $args{days}));
         } else {
             $start_date = $end_date->clone->subtract(months=>1);
-            $self->logger->debugf(
+            $self->logger->debug(sprintf(
                 'Setting start_date to %04d-%02d-%02d (end_date - 1mo)',
-                $start_date->year, $start_date->month, $start_date->day);
+                $start_date->year, $start_date->month, $start_date->day));
         }
     }
 

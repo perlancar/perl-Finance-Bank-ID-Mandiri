@@ -6,7 +6,6 @@ package Finance::Bank::ID::Mandiri;
 use 5.010001;
 
 use Moo;
-use DateTime;
 
 use HTTP::Headers;
 use HTTP::Headers::Patch::DontUseStorable -load_target=>0;
@@ -177,6 +176,8 @@ sub check_balance {
 }
 
 sub get_statement {
+    require DateTime;
+
     my ($self, %args) = @_;
     my $s = $self->site;
 
@@ -276,6 +277,8 @@ sub _ps_get_metadata {
 }
 
 sub _ps_get_metadata_ib {
+    require DateTime;
+
     my ($self, $page, $stmt) = @_;
 
     unless ($page =~ /Tampilkan Berdasarkan(?:\s+|(?:<[^>]+>\s*)*):(?:\s+|(?:<[^>]+>\s*)*)Tanggal(?:\s+|(?:<[^>]+>\s*)*)Urutkan Berdasarkan(?:\s+|(?:<[^>]+>\s*)*):(?:\s+|(?:<[^>]+>\s*)*)Mulai dari yang kecil/s) {
@@ -344,6 +347,8 @@ sub _ps_get_metadata_ib {
 }
 
 sub _ps_get_metadata_cms {
+    require DateTime;
+
     my ($self, $page, $stmt) = @_;
 
     unless ($page =~ /^- End Of Statement -/m) {
@@ -390,6 +395,8 @@ sub _ps_get_metadata_cms {
 }
 
 sub _ps_get_metadata_mcm {
+    require DateTime;
+
     my ($self, $page, $stmt) = @_;
 
     my $re_tx = $self->_re_tx;
@@ -429,6 +436,8 @@ sub _ps_get_transactions {
 }
 
 sub _ps_get_transactions_ib {
+    require DateTime;
+
     my ($self, $page, $stmt) = @_;
 
     my @tx;
@@ -500,6 +509,8 @@ sub _ps_get_transactions_ib {
 }
 
 sub _ps_get_transactions_cms {
+    require DateTime;
+
     my ($self, $page, $stmt) = @_;
 
     if ($page =~ /<br|<p/i) {
@@ -554,6 +565,8 @@ sub _ps_get_transactions_cms {
 }
 
 sub _ps_get_transactions_mcm {
+    require DateTime;
+
     my ($self, $page, $stmt) = @_;
 
     my $re_tx = $self->_re_tx;

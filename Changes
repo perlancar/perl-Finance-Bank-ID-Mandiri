@@ -1,6 +1,13 @@
+0.381   2019-01-29 (PERLANCAR)
+
+	- [bug][test] Forgot to add tests, and fix date conversion.
+
+
 0.380   2019-01-29 (PERLANCAR)
 
-	- Parse newest CSV format (dubbed v201901) from MCM [Indonesian]
+	- UPDATE: This release was broken, sorry.
+
+        - Parse newest CSV format (dubbed v201901) from MCM [Indonesian]
 	  site.
 
 

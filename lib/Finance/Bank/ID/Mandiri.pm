@@ -430,14 +430,14 @@ sub _ps_get_metadata_mcm {
     $stmt->{account} = $+{acc};
     $stmt->{currency} = $+{currency} // "IDR"; # assume if not given
     $stmt->{start_date} = DateTime->new(
-        day=>$+{date_d}, month=>$+{date_m}, year=>$+{date_y});
+        day=>$+{date_d}, month=>$+{date_m}, year=>($+{date_y} < 100 ? 2000:0)+$+{date_y});
 
     # we'll just assume the first and last transaction date to be start and
     # end date of statement, because the semicolon format doesn't include
     # any other metadata.
     $page =~ m!.*$re_tx!s or return "can't get end date";
     $stmt->{end_date} = DateTime->new(
-        day=>$+{date_d}, month=>$+{date_m}, year=>$+{date_y});
+        day=>$+{date_d}, month=>$+{date_m}, year=>($+{date_y} < 100 ? 2000:0)+$+{date_y});
 
     # Mandiri sucks, doesn't provide total credit/debit in statement
     my $n = 0;
@@ -612,7 +612,7 @@ sub _ps_get_transactions_mcm {
             txcode    => $+{txcode},
             day       => $+{date_d},
             month     => $+{date_m},
-            year      => $+{date_y},
+            year      => ($+{date_y} < 100 ? 2000:0) + $+{date_y},
             desc1     => $+{desc1},
             desc2     => $+{desc2},
         };

@@ -1,3 +1,9 @@
+0.380   2019-01-29 (PERLANCAR)
+
+	- Parse newest CSV format (dubbed v201901) from MCM [Indonesian]
+	  site.
+
+
 0.37    2017-07-20 (PERLANCAR)
 
 	- No functional changes.

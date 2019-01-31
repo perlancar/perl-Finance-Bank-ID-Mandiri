@@ -50,8 +50,7 @@ our $re_mcm_v201107 = qr!^(?<acc>$re_acc);(?<currency>$re_currency);
                          (?<amount_cr>$re_money);
                          (?<bal>$re_moneymin)!mx; # maybe? no more DR marker
 
-# this CSV is currently available when we use the indonesian language on the
-# website. what's different: a CSV (comma as field separator), a header field,
+# what's different: a CSV (comma as field separator), a header field,
 # no more currency field, two dates.
 # header: Account No,Date,Val. Date,Transaction Code,Description,Description,Reference No.,Debit,Credit,
 our $re_mcm_v201901 = qr!^(?<acc>$re_acc),

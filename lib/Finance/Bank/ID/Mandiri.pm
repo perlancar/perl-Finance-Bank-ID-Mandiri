@@ -22,7 +22,7 @@ my $re_money       = qr/(?:\d+(?:\.\d\d?)?)/;
 my $re_moneymin    = qr/(?:-?\d+(?:\.\d\d?)?)/; # allow negative
 my $re_money2      = qr/(?:[\d,]*(?:\.\d\d?)?)/; # allow starts with ., e.g. .00. formatted thousand=, decimal=.
 my $re_date1       = qr!(?:\d{2}/\d{2}/\d{4})!; # 25/12/2010
-my $re_txcode      = qr!(?:\d{4})!;
+my $re_txcode      = qr!(?:\d{3,4})!;
 
 # original version when support first added
 our $re_mcm_v201009 = qr!^(?<acc>$re_acc);(?<currency>$re_currency);

@@ -1,20 +1,21 @@
 package Finance::Bank::ID::Mandiri;
 
-# DATE
-# VERSION
-
 use 5.010001;
-
-use Moo;
-
+use strict;
+use warnings;
 use HTTP::Headers;
-use HTTP::Headers::Patch::DontUseStorable -load_target=>0;
 use Parse::Number::EN qw(parse_number_en);
 
+use Moo;
 extends 'Finance::Bank::ID::Base';
 
 has _variant => (is => 'rw');
 has _re_tx   => (is => 'rw');
+
+# AUTHORITY
+# DATE
+# DIST
+# VERSION
 
 my $re_acc         = qr/(?:\d{13})/;
 my $re_currency    = qr/(?:\w{3})/;

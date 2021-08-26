@@ -1,3 +1,8 @@
+0.383   2021-08-26  Released-By: PERLANCAR; Urgency: medium
+
+	- No longer use HTTP::Headers::Patch::DontUseStorable.
+
+
 0.382   2019-05-13  Released-By: PERLANCAR
 
 	- Handle 3-digit transaction code (found in a mcm-v201901 report).
